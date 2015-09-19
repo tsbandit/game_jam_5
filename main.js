@@ -80,20 +80,23 @@ const delimit = function(new_ui, gen_func) {
 	requestAnimationFrame(anim);
 }
 
-// Install mouse_moved handler
+// Install mouse_moved handlers
 {
 	const rect = canvas.getBoundingClientRect();
-	const cb = function(ev) {
+	const cb = type => function(ev) {
 		const event = {
-			type: 'mouse_moved',
+			type: type,
 			ev:   ev,
 			mx:   ev.clientX - rect.left,
 			my:   ev.clientY - rect.top,
 		};
-		(ui.mouse_moved || (() => {})) (event);
+		(ui[type] || (() => {})) (event);
 	};
-	canvas.addEventListener('mousemove',    cb, false);
-	canvas.addEventListener('mousedragged', cb, false);
+
+	canvas.addEventListener('mousemove',    cb('mouse_moved'),   false);
+	canvas.addEventListener('mousedragged', cb('mouse_moved'),   false);
+
+	canvas.addEventListener('mousedown',    cb('mouse_clicked'), false);
 }
 
 // Utility function:  dispatch
