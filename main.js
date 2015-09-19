@@ -41,6 +41,10 @@ document.body.appendChild(canvas);
 
 // This is the master handler. It's kind of a global.
 let ui = {};
+Object.defineProperty(modules.game, 'ui', {
+  get: () => ui,
+  set: x => ui = x,
+});
 
 // Utility function for temporarily changing the 'ui' object.
 const delimit = function(new_ui, gen_func) {
