@@ -126,38 +126,6 @@ util.dispatch = function(discriminee, cases) {
 	}
 };
 
-// Initialize the 'ui' object.
-modules.define('main')
-.import('title')
-.export(function (defs) {
-	ui = defs.title.initUi();
-});
-
-/*{
-	let x = 0;
-
-	const hello = {
-		draw: ctx => {
-			ctx.fillText("hello", x, 10);
-		},
-		tick: elapsed => {
-			++x;
-		},
-		mouse_moved: ({mx}) => {
-			x = mx;
-
-			Game.delimit({draw: ui.draw}, function*(resume) {
-				for(let i=0; i<10; ++i) {
-					yield setTimeout(resume, 100);
-					console.log(i);
-				}
-			});
-		},
-	};
-
-	ui = modules.title.initUi();
-}*/
-
 util.barrier = function(spawner, cb) {
 	let n_expected = 0;
 	let n_done = 0;
@@ -176,13 +144,15 @@ util.barrier = function(spawner, cb) {
 	});
 };
 
-/*
-util.barrier(k => {
-	loadImage('foo.png', k());
-	loadImage('bar.png', k());
-}, resume);
-yield;
-*/
+// Initialize the 'ui' object.
+modules.define('main')
+.import('title')
+.import('image')
+.export(function (defs) {
+	game.loadImages(function () {
+		ui = defs.title.initUi();
+	});
+});
 
 
 
