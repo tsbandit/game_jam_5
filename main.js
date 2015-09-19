@@ -28,10 +28,10 @@ const assert = function(b) {
 const WIDTH  = 640;
 const HEIGHT = 480;
 
-window.modules.game = {
+var game = modules.define('game', {
 	WIDTH: WIDTH,
 	HEIGHT: HEIGHT
-}
+});
 
 // Create canvas
 const canvas = document.createElement('canvas');
@@ -41,7 +41,7 @@ document.body.appendChild(canvas);
 
 // This is the master handler. It's kind of a global.
 let ui = {};
-Object.defineProperty(modules.game, 'ui', {
+Object.defineProperty(game, 'ui', {
 	get: () => ui,
 	set: x => ui = x,
 });
@@ -120,7 +120,13 @@ const dispatch = function(discriminee, cases) {
 };
 
 // Initialize the 'ui' object.
-{
+modules.define('main')
+.import('title')
+.export(function (defs) {
+	ui = defs.title.initUi();
+});
+
+/*{
 	let x = 0;
 
 	const hello = {
@@ -143,7 +149,7 @@ const dispatch = function(discriminee, cases) {
 	};
 
 	ui = modules.title.initUi();
-}
+}*/
 
 
 
