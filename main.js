@@ -1,3 +1,5 @@
+window.modules = window.modules || {};
+
 // This function kind of spawns a new thread. Kind of.
 // It should be called NEAR THE END of the current turn of the event loop.
 const run_async = function(gen_fn) {
@@ -25,6 +27,11 @@ const assert = function(b) {
 
 const WIDTH  = 640;
 const HEIGHT = 480;
+
+window.modules.game = {
+	WIDTH: WIDTH,
+	HEIGHT: HEIGHT
+}
 
 // Create canvas
 const canvas = document.createElement('canvas');
@@ -131,7 +138,7 @@ const dispatch = function(discriminee, cases) {
     },
   };
 
-  ui = hello;
+  ui = modules.title.initUi();
 }
 
 
