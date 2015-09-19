@@ -141,7 +141,7 @@ const dispatch = function(discriminee, cases) {
 });
 
 
-const barrier = function(cb, spawner) {
+const barrier = function(spawner, cb) {
   let n_expected = 0;
   let n_done = 0;
   const results = [];
@@ -160,9 +160,9 @@ const barrier = function(cb, spawner) {
 };
 
 /*
-barrier(resume, k => {
+barrier(k => {
   loadImage('foo.png', k());
   loadImage('bar.png', k());
-});
+}, resume);
 yield;
 */
