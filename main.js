@@ -28,15 +28,12 @@ const assert = function(b) {
 const WIDTH  = 640;
 const HEIGHT = 480;
 
-window.modules.game = {
-	WIDTH: WIDTH,
-	HEIGHT: HEIGHT
-};
-const Game = window.modules.game;
-const util = window.modules.util = {
-	assert: assert,
-	run_async: run_async,
-};
+const Game = window.modules.game = window.modules.game || {};
+Game.WIDTH = WIDTH;
+Game.HEIGHT = HEIGHT;
+const util = window.modules.util = window.modules.util || {};
+util.assert = assert;
+util.run_async = run_async;
 
 // Create canvas
 const canvas = document.createElement('canvas');
