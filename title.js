@@ -6,9 +6,9 @@ window.modules[moduleName] = (function () {
 	var exports = {};
 	
 	exports.initUi = function () {
+		var Game = window.modules.game;
 		var ui = {
 			draw: function (ctx) {
-				var Game = window.modules.game;
 				
 				ctx.font = "bold 24pt sans-serif";
 				ctx.fillStyle = "#000";
@@ -17,7 +17,10 @@ window.modules[moduleName] = (function () {
 			},
 			tick: function (elapsed) {
 				
-			}
+			},
+			mouse_clicked: function(ev) {
+				Game.ui = {draw: ctx => ctx.fillText('foo',50,50)};
+			},
 		}
 		return ui;
 	};
