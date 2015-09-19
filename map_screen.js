@@ -19,6 +19,7 @@ window.modules[moduleName] = (function () {
 				
 			},
 			mouse_clicked: function(ev) {
+				Game.ui = modules.battle.initUi();
 			},
 		}
 		return ui;
