@@ -51,7 +51,7 @@ const delimit = function(new_ui, gen_func) {
 // Install animation-frame handler
 {
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'green';
+  ctx.fillStyle = 'red';
 
   let prev_timestamp = null;
   const anim = function(timestamp) {
