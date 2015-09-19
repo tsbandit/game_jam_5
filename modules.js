@@ -20,18 +20,15 @@ window.modules = (function () {
 	var waiting = [];
 	// Notify the modules system that a module is ready
 	function modules_notify() {
-		console.log("Module notify: "+waiting.map(x => x.name));
-		
 		for (var i = 0; i < waiting.length; ++i) {
 			var next = waiting[i];
 			var defs = module_resolve(next);
 			
 			if (defs === null) {
-				console.log("===> Missing dependencies for: "+next.name);
 				continue;
 			}
 				
-			console.log("===> Compiling: "+next.name);
+			console.log("Loading module: "+next.name+" ("+next._dependencies+")");
 			
 			var newDef;
 			if (typeof next._definition === 'function') {
