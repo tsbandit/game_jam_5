@@ -142,13 +142,9 @@ util.barrier = function(spawner, cb) {
 	});
 };
 
-/*
-util.barrier(k => {
-	loadImage('foo.png', k());
-	loadImage('bar.png', k());
-}, resume);
+assert(Game.loadImages);
+Game.loadImages(resume);
 yield;
-*/
 
 ui = modules.title.initUi();
 
