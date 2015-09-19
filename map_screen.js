@@ -1,12 +1,13 @@
-var moduleName = "map_screen";
+(function() {
 
-window.modules = window.modules || {};
-window.modules[moduleName] = (function () {
-	// Title screen
+const map_screen = modules.define('map_screen')
+.import('game')
+.export(function (defs) {
+	// Map screen
 	const exports = {};
 	
 	exports.initUi = function () {
-		var Game = window.modules.game;
+		var Game = defs.game;
 		var ui = {
 			draw: function (ctx) {
 				ctx.font = "bold 24pt sans-serif";
@@ -25,4 +26,6 @@ window.modules[moduleName] = (function () {
 	};
 	
 	return exports;
+});
+
 }());

@@ -28,15 +28,14 @@ const assert = function(b) {
 const WIDTH  = 640;
 const HEIGHT = 480;
 
-window.modules.game = {
+const game = modules.define('game', {
 	WIDTH: WIDTH,
 	HEIGHT: HEIGHT
-};
-const Game = window.modules.game;
-const util = window.modules.util = {
+});
+const util = modules.define('util', {
 	assert: assert,
 	run_async: run_async,
-};
+});
 
 // Create canvas
 const canvas = document.createElement('canvas');
@@ -46,13 +45,13 @@ document.body.appendChild(canvas);
 
 // This is the master handler. It's kind of a global.
 let ui = {};
-Object.defineProperty(modules.game, 'ui', {
+Object.defineProperty(game, 'ui', {
 	get: () => ui,
 	set: x => ui = x,
 });
 
 // Utility function for temporarily changing the 'ui' object.
-Game.delimit = function(new_ui, gen_func) {
+game.delimit = function(new_ui, gen_func) {
 	run_async(function*(resume) {
 		const old_ui = ui;
 		ui = new_ui;
@@ -127,32 +126,6 @@ util.dispatch = function(discriminee, cases) {
 	}
 };
 
-// Initialize the 'ui' object.
-{
-	let x = 0;
-
-	const hello = {
-		draw: ctx => {
-			ctx.fillText("hello", x, 10);
-		},
-		tick: elapsed => {
-			++x;
-		},
-		mouse_moved: ({mx}) => {
-			x = mx;
-
-			Game.delimit({draw: ui.draw}, function*(resume) {
-				for(let i=0; i<10; ++i) {
-					yield setTimeout(resume, 100);
-					console.log(i);
-				}
-			});
-		},
-	};
-
-	ui = modules.title.initUi();
-}
-
 util.barrier = function(spawner, cb) {
 	let n_expected = 0;
 	let n_done = 0;
@@ -171,13 +144,15 @@ util.barrier = function(spawner, cb) {
 	});
 };
 
-/*
-util.barrier(k => {
-	loadImage('foo.png', k());
-	loadImage('bar.png', k());
-}, resume);
-yield;
-*/
+// Initialize the 'ui' object.
+modules.define('main')
+.import('title')
+.import('image')
+.export(function (defs) {
+	game.loadImages(function () {
+		ui = defs.title.initUi();
+	});
+});
 
 
 
