@@ -20,24 +20,30 @@ window.modules = (function () {
 	var waiting = [];
 	// Notify the modules system that a module is ready
 	function modules_notify() {
-		while (waiting.length > 0) {
-			var top = waiting[waiting.length - 1];
-			var defs = module_resolve(top);
+		console.log("Module notify: "+waiting.map(x => x.name));
+		
+		for (var i = 0; i < waiting.length; ++i) {
+			var next = waiting[i];
+			var defs = module_resolve(next);
 			
-			if (defs !== null) {
-				var newDef;
-				if (typeof top._definition === 'function') {
-					newDef = top._definition(defs);
-				} else {
-					newDef = top._definition;
-				}
-				
-				extend(top, newDef);
-				modules.definitions[top.name] = top;
-				waiting.pop();
-			} else {
-				break;
+			if (defs === null) {
+				console.log("===> Missing dependencies for: "+next.name);
+				continue;
 			}
+				
+			console.log("===> Compiling: "+next.name);
+			
+			var newDef;
+			if (typeof next._definition === 'function') {
+				newDef = next._definition(defs);
+			} else {
+				newDef = next._definition;
+			}
+			
+			extend(next, newDef);
+			modules.definitions[next.name] = next;
+			waiting.splice(i,1);
+			return modules_notify();
 		}
 	}
 	
