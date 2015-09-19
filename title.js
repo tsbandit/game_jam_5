@@ -6,9 +6,9 @@ window.modules[moduleName] = (function () {
 	var exports = {};
 	
 	exports.initUi = function () {
+		var Game = window.modules.game;
 		var ui = {
 			draw: function (ctx) {
-				var Game = window.modules.game;
 				
 				ctx.font = "bold 24pt sans-serif";
 				ctx.fillStyle = "#000";
@@ -17,7 +17,10 @@ window.modules[moduleName] = (function () {
 			},
 			tick: function (elapsed) {
 				
-			}
+			},
+			mouse_clicked: function(ev) {
+				Game.ui = modules.map_screen.initUi();
+			},
 		}
 		return ui;
 	};
@@ -27,6 +30,7 @@ window.modules[moduleName] = (function () {
 
 var title = modules.define('title')
 .import('game')
+.import('map_screen')
 .export(function (defs) {
 	// Title screen
 	var game = defs.game;
@@ -43,7 +47,10 @@ var title = modules.define('title')
 			},
 			tick: function (elapsed) {
 				
-			}
+			},
+			mouse_clicked: function(ev) {
+				game.ui = defs.map_screen.initUi();
+			},
 		}
 		return ui;
 	};

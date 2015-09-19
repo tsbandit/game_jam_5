@@ -28,9 +28,13 @@ const assert = function(b) {
 const WIDTH  = 640;
 const HEIGHT = 480;
 
-var game = modules.define('game', {
+const game = modules.define('game', {
 	WIDTH: WIDTH,
 	HEIGHT: HEIGHT
+});
+const util = modules.define('util', {
+	assert: assert,
+	run_async: run_async,
 });
 
 // Create canvas
@@ -47,7 +51,7 @@ Object.defineProperty(game, 'ui', {
 });
 
 // Utility function for temporarily changing the 'ui' object.
-const delimit = function(new_ui, gen_func) {
+game.delimit = function(new_ui, gen_func) {
 	run_async(function*(resume) {
 		const old_ui = ui;
 		ui = new_ui;
@@ -80,20 +84,23 @@ const delimit = function(new_ui, gen_func) {
 	requestAnimationFrame(anim);
 }
 
-// Install mouse_moved handler
+// Install mouse_moved handlers
 {
 	const rect = canvas.getBoundingClientRect();
-	const cb = function(ev) {
+	const cb = type => function(ev) {
 		const event = {
-			type: 'mouse_moved',
+			type: type,
 			ev:   ev,
 			mx:   ev.clientX - rect.left,
 			my:   ev.clientY - rect.top,
 		};
-		(ui.mouse_moved || (() => {})) (event);
+		(ui[type] || (() => {})) (event);
 	};
-	canvas.addEventListener('mousemove',    cb, false);
-	canvas.addEventListener('mousedragged', cb, false);
+
+	canvas.addEventListener('mousemove',    cb('mouse_moved'),   false);
+	canvas.addEventListener('mousedragged', cb('mouse_moved'),   false);
+
+	canvas.addEventListener('mousedown',    cb('mouse_clicked'), false);
 }
 
 // Utility function:  dispatch
@@ -104,7 +111,7 @@ const delimit = function(new_ui, gen_func) {
 //     TypeB:   ({fieldB}) => {...},
 //     DEFAULT: event      => {...},
 //   });
-const dispatch = function(discriminee, cases) {
+util.dispatch = function(discriminee, cases) {
 	const f = cases[discriminee.type];
 	if(f === undefined) {
 		const g = cases.DEFAULT;
@@ -139,7 +146,7 @@ modules.define('main')
 		mouse_moved: ({mx}) => {
 			x = mx;
 
-			delimit({draw: ui.draw}, function*(resume) {
+			Game.delimit({draw: ui.draw}, function*(resume) {
 				for(let i=0; i<10; ++i) {
 					yield setTimeout(resume, 100);
 					console.log(i);
@@ -151,14 +158,7 @@ modules.define('main')
 	ui = modules.title.initUi();
 }*/
 
-
-
-// END OF MAIN THREAD
-////////////////////////////////////////////////////////////////////////
-});
-
-
-const barrier = function(spawner, cb) {
+util.barrier = function(spawner, cb) {
 	let n_expected = 0;
 	let n_done = 0;
 	const results = [];
@@ -177,9 +177,15 @@ const barrier = function(spawner, cb) {
 };
 
 /*
-barrier(k => {
+util.barrier(k => {
 	loadImage('foo.png', k());
 	loadImage('bar.png', k());
 }, resume);
 yield;
 */
+
+
+
+// END OF MAIN THREAD
+////////////////////////////////////////////////////////////////////////
+});
