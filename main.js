@@ -31,7 +31,12 @@ const HEIGHT = 480;
 window.modules.game = {
 	WIDTH: WIDTH,
 	HEIGHT: HEIGHT
-}
+};
+const Game = window.modules.game;
+const util = window.modules.util = {
+	assert: assert,
+	run_async: run_async,
+};
 
 // Create canvas
 const canvas = document.createElement('canvas');
@@ -47,7 +52,7 @@ Object.defineProperty(modules.game, 'ui', {
 });
 
 // Utility function for temporarily changing the 'ui' object.
-const delimit = function(new_ui, gen_func) {
+Game.delimit = function(new_ui, gen_func) {
 	run_async(function*(resume) {
 		const old_ui = ui;
 		ui = new_ui;
@@ -107,7 +112,7 @@ const delimit = function(new_ui, gen_func) {
 //     TypeB:   ({fieldB}) => {...},
 //     DEFAULT: event      => {...},
 //   });
-const dispatch = function(discriminee, cases) {
+util.dispatch = function(discriminee, cases) {
 	const f = cases[discriminee.type];
 	if(f === undefined) {
 		const g = cases.DEFAULT;
@@ -136,7 +141,7 @@ const dispatch = function(discriminee, cases) {
 		mouse_moved: ({mx}) => {
 			x = mx;
 
-			delimit({draw: ui.draw}, function*(resume) {
+			Game.delimit({draw: ui.draw}, function*(resume) {
 				for(let i=0; i<10; ++i) {
 					yield setTimeout(resume, 100);
 					console.log(i);
@@ -148,14 +153,7 @@ const dispatch = function(discriminee, cases) {
 	ui = modules.title.initUi();
 }
 
-
-
-// END OF MAIN THREAD
-////////////////////////////////////////////////////////////////////////
-});
-
-
-const barrier = function(spawner, cb) {
+util.barrier = function(spawner, cb) {
 	let n_expected = 0;
 	let n_done = 0;
 	const results = [];
@@ -174,9 +172,15 @@ const barrier = function(spawner, cb) {
 };
 
 /*
-barrier(k => {
+util.barrier(k => {
 	loadImage('foo.png', k());
 	loadImage('bar.png', k());
 }, resume);
 yield;
 */
+
+
+
+// END OF MAIN THREAD
+////////////////////////////////////////////////////////////////////////
+});
