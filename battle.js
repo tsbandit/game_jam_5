@@ -17,6 +17,21 @@ const battle = modules.define('battle')
         this.speed = speed;
         this.cd = speed*1000;
     };
+	
+	var makeSpell = function({name, cost, target, effect}) { return {
+		name: name,
+		target: target,
+		effect: function(source, target) { effect(source, target); source.mp -= cost; },
+		isPossible: function(source) { return source.mp >= cost; },
+	};};
+	
+	/*
+	Magic Properties:
+	name: string
+	cost: number
+	getTarget: launches new ui (or picks a target at random)
+	effect: function(target)
+	*/
     
     Combatant.prototype.attack = function(target) {
         target.hp -= this.dmg;
@@ -28,13 +43,19 @@ const battle = modules.define('battle')
     
     var allies;
     var enemies;
-	var active;
 	var attackButton = {
+		name: "ATTACK",
 		x: 40,
-		y: game.HEIGHT-40,
 		w: 160,
 		h: 60,
 		fill: "#f99",
+	}
+	var spellsButton = {
+		name: "SPELLS",
+		x: 220,
+		w: 160,
+		h: 60,
+		fill: "#99f",
 	}
 	var enemyIcons = {
 		x: game.WIDTH-80,
@@ -59,6 +80,7 @@ const battle = modules.define('battle')
 		
 		// Set these after game dimensions have been set
 		attackButton.y = game.HEIGHT-40;
+		spellsButton.y = game.HEIGHT-40;
 		enemyIcons.x = game.WIDTH-80;
         
         allies.push(new Combatant("Bobette", 10, 3, 2.0));
@@ -68,6 +90,34 @@ const battle = modules.define('battle')
         enemies.push(new Combatant("Foo", 3, 2, 2.7));
         enemies.push(new Combatant("Barbarbarbar", 4, 2, 2.5));
         enemies.push(new Combatant("Baz", 5, 2, 2.2));
+		
+		// Magic setup (temp)
+		allies[1].spells = [
+		makeSpell({
+			name: "Magic Missle",
+			cost: 3,
+			target: "enemy",
+			effect: function(target) {
+				target.hp -= 3;
+			}
+		}),
+		makeSpell({
+			name: "Firestorm",
+			cost: 7,
+			target: "allEnemies",
+			effect: function(target) {
+				target.hp -= 4;
+			}
+		}),
+		makeSpell({
+			name: "Heal",
+			cost: 4,
+			target: "ally",
+			effect: function(target) {
+				target.hp += 5;
+			}
+		}),
+		];
 		
 		var overButton = function(mx, my, button) {
 			return ((mx > button.x) && (mx < button.x+button.w) &&
@@ -104,14 +154,8 @@ const battle = modules.define('battle')
 				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, 20, 22*(i+1));
 
-				let {x, y, w, h} = allyIcons;
-				y = allyIcons.ys+i*allyIcons.yi;
-
-				// Highlight if active turn
-				if (active == allies[i]) {
-					ctx.fillStyle = "#0f0";
-					ctx.fillRect(x, y, w, h);
-				}
+				const {x, w, h, ys, yi} = allyIcons;
+				const y = ys+i*yi;
 
 				// Draw sprite
 				defs.image.drawImage(ctx, 'Game Jam Art/Blue Hair Sprite finish.png', x, y);
@@ -127,6 +171,8 @@ const battle = modules.define('battle')
             ctx.textAlign = "right";
             for (var i=0; i<enemies.length; i++) {
                 var e = enemies[i];
+				
+				// Draw name and HP
                 ctx.font = "bold 18pt sans-serif";
                 ctx.fillStyle = "#f00";
                 if (e.hp <= 0) ctx.fillStyle = "#888";
@@ -134,15 +180,14 @@ const battle = modules.define('battle')
 				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, game.WIDTH-20, 22*(i+1));
 				
-				// Temporary Sprites
-				if (enemyIcons.over == i) {
-					ctx.fillStyle = "#f00";
-				}
-                else {
-					ctx.fillStyle = "#f99";
-				}
-				ctx.fillRect(enemyIcons.x, enemyIcons.ys+(i*enemyIcons.yi), enemyIcons.w, enemyIcons.h);
+				const {x, w, h, ys, yi} = enemyIcons;
+				const y = ys+i*yi;
 				
+				// Draw sprite
+				ctx.fillStyle = (enemyIcons.over ? "#f00" : "#f99");
+				ctx.fillRect(x, y, w, h);
+				
+				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
                 ctx.fillStyle = "#444";
                 ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-txtw-30, 22*(i+1));
@@ -150,14 +195,18 @@ const battle = modules.define('battle')
         };
 		
 		var drawMenu = function(ctx, attacker) {
-			ctx.fillStyle = attackButton.fill;
-			var b = attackButton;
+			drawButton(ctx, attackButton);
+			drawButton(ctx, spellsButton);
+		};
+		
+		var drawButton = function(ctx, b) {
+			ctx.fillStyle = b.fill;
 			ctx.fillRect(b.x, b.y, b.w, b.h);
 			ctx.font = "bold 20pt sans-serif";
 			ctx.fillStyle = "#000";
 			ctx.textAlign = "center";
-			ctx.fillText("ATTACK", b.x+(b.w/2), b.y+26);
-		};
+			ctx.fillText(b.name, b.x+(b.w/2), b.y+26);
+		}
 		
 		var tickCooldowns = function(elapsed) {
 			for (var i=0; i<allies.length; i++) {
@@ -206,8 +255,8 @@ const battle = modules.define('battle')
 				if (a.cd <= 0) {
 					
 					// Menu UI
-					active = a;
-					game.ui = menu_ui;
+//					active = a;
+					game.ui = menu_ui(a);
 				}
 			}
 		};
@@ -264,23 +313,28 @@ const battle = modules.define('battle')
 		};
 		
 		// MAIN MENU UI
-		var menu_ui = {
+		var menu_ui = function(active) { return {
 			draw: function (ctx) {
 				drawStandard(ctx);
 				drawMenu(ctx);
 			},
             mouse_clicked: function({mx,my}) {
                 if (overButton(mx,my,attackButton)) {
-					game.ui = target_ui;
+					game.ui = target_ui(active);
+				}
+				if (overButton(mx,y,spellsButton)) {
+					
 				}
 			},
 			mouse_moved: function({mx,my}) {
 				if (overButton(mx,my,attackButton)) attackButton.fill = "#f00";
 				else attackButton.fill = "#f99";
+				if (overButton(mx,my,spellsButton)) spellsButton.fill = "#00f";
+				else spellsButton.fill = "#99f";
 			},
-		};
+		};};
 		
-		var target_ui = {
+		var target_ui = function(active) { return {
 			draw: function (ctx) {
 				drawStandard(ctx);
 				drawMenu(ctx);
@@ -297,7 +351,7 @@ const battle = modules.define('battle')
 			mouse_moved: function({mx,my}) {
 				enemyIcons.over = overEnemy(mx,my);
 			},
-		};
+		};};
         
 		var ui = {
 			draw: function (ctx) {
