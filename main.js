@@ -8,7 +8,7 @@ modules.define('main')
 .import('battle')
 .export(function (defs) {
 	
-const {game, util, input, title} = defs;
+const {game, util, input, title, image} = defs;
 
 util.run_async(function*(resume) {
 ////////////////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ util.run_async(function*(resume) {
 	input.init();
 	
 	// Load images
-	game.loadImages(resume);
+	image.loadImages(resume);
 	yield;
 	
 	game.ui = title.initUi();
