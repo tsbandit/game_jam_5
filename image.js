@@ -6,6 +6,7 @@ const image = modules.define('image', function (defs) {
 	const imageList = [
 		'Game Jam Rooms/Solid Room.png',
 		'Game Jam Art/Blue Hair Sprite finish.png',
+		'Game Jam Items/Stairs Acending stairs.png',
 		'hello.png',
 		'nonexistant.png'
 	];

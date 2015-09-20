@@ -81,14 +81,19 @@ const map_screen = modules.define('map_screen')
 			grid[stair_y][stair_x].type = 'stair_forward';
 		}
 
+		const screen_coords = function(x, y) {
+			const sx = BASE_X+ROOM_W*x;
+			const sy = BASE_Y+ROOM_H*y;
+			return [sx, sy];
+		};
+
 		const draw_room = function(ctx, x, y) {
 			const room = grid[y][x];
 
 			if(!room.visible)
 				return;
 
-			const sx = BASE_X+ROOM_W*x;
-			const sy = BASE_Y+ROOM_H*y;
+			const [sx, sy] = screen_coords(x, y);
 
 			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
 
@@ -96,7 +101,7 @@ const map_screen = modules.define('map_screen')
 				mob: () =>
 					draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red'),
 				stair_forward: () =>
-					draw_disc(ctx, sx+ROOM_W*.75, sy+ROOM_H*.75, 8, 'blue'),
+					image.drawImage(ctx, 'Game Jam Items/Stairs Acending stairs.png', sx, sy),
 			});
 		};
 
@@ -107,7 +112,8 @@ const map_screen = modules.define('map_screen')
 						draw_room(ctx, j, i);
 
 				// Draw player
-				draw_disc(ctx, BASE_X+(px+.5)*ROOM_W, BASE_Y+(py+.5)*ROOM_H, 12, 'black');
+				const [sx, sy] = screen_coords(px, py);
+				image.drawImage(ctx, 'Game Jam Art/Blue Hair Sprite finish.png', sx, sy);
 			},
 			tick: function (elapsed) {
 				
