@@ -25,18 +25,21 @@ const battle = modules.define('battle')
         this.hp = 0;
     }
     
-    var allies = [];
-    var enemies = [];
+    var allies;
+    var enemies;
 	
 	module.initUi = function () {
+		
+		allies = [];
+		enemies = [];
         
         allies.push(new Combatant("Bobette", 10, 3, 1.4));
         allies.push(new Combatant("Muscle Sorceress", 8, 3, 1.4));
         allies.push(new Combatant("Carl", 9, 3, 1.4));
         
-        enemies.push(new Combatant("Foo", 3, 2, 8.5));
-        enemies.push(new Combatant("Bar", 4, 2, 6.5));
-        enemies.push(new Combatant("Baz", 5, 2, 7.2));
+        enemies.push(new Combatant("Foo", 3, 2, 1.5));
+        enemies.push(new Combatant("Bar", 4, 2, 1.5));
+        enemies.push(new Combatant("Baz", 5, 2, 2.2));
         
         var drawAllies = function(ctx) {
             ctx.textAlign = "left";
@@ -63,17 +66,34 @@ const battle = modules.define('battle')
                 //ctx.fillText(e.cd.toFixed(2), Game.WIDTH-ctx.measureText(txt).width-44, 22*(i+1));
             }
         };
+		
+		var drawOther = function(ctx) {
+			if (alliesDead()) {
+				ctx.font = "bold 24pt sans-serif";
+				ctx.fillStyle = "#000";
+				ctx.textAlign = "center";
+				ctx.fillText('YOU LOSE', game.WIDTH/2, game.HEIGHT/5);
+				ctx.font = "bold 16pt sans-serif";
+				ctx.fillText('Click to continue.', game.WIDTH/2, game.HEIGHT/5+30);
+			}
+		};
+		
+		var tickAllies = function(elapsed) {
+			
+		};
         
         var tickEnemies = function(elapsed) {
             for (var i=0; i<enemies.length; i++) {
                 var e = enemies[i];
                 e.cd += elapsed;
                 if (e.cd >= e.speed*1000) {
-                        if (!alliesDead()) {
+                    if (!alliesDead()) {
                         var t = allies[Math.floor(Math.random()*allies.length)];
                         while (t.hp <= 0) t = allies[Math.floor(Math.random()*allies.length)];
                         e.attack(t);
-                        if (t.hp <= 0) t.die(true);
+                        if (t.hp <= 0) {
+                            t.die(true);
+                        }
                         e.cd -= e.speed*1000;
                     }
                 }
@@ -86,18 +106,29 @@ const battle = modules.define('battle')
             }
             return true;
         };
+		
+		var enemiesDead = function() {
+            for (var i=0; i<enemies.length; i++) {
+                if (enemies[i].hp > 0) return false;
+            }
+            return true;
+        };
         
 		var ui = {
 			draw: function (ctx) {
-                drawAllies(ctx);
-				drawEnemies(ctx);                
+				drawAllies(ctx);
+				drawEnemies(ctx);
+				drawOther(ctx);
 			},
 			tick: function (elapsed) {
+				tickAllies(elapsed);
 				tickEnemies(elapsed);
 			},
-            mouse_moved: () => {
-                //enemies[0].hp += 3;
-            },
+            mouse_clicked: function(ev) {
+                if (alliesDead()) {
+					game.ui = defs.map_screen.initUi();
+				}
+			},
 		};
 		return ui;
 	};
