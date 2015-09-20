@@ -141,11 +141,9 @@ const battle = modules.define('battle')
 				}
 				ctx.fillRect(enemyIcons.x, enemyIcons.ys+(i*enemyIcons.yi), enemyIcons.w, enemyIcons.h);
 				
-				debugger;
                 ctx.font = "bold 14pt sans-serif";
                 ctx.fillStyle = "#444";
                 ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-ctx.measureText(txt).width-44, 22*(i+1));
-				debugger;
             }
         };
 		
