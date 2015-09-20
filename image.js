@@ -1,7 +1,6 @@
 (function() {
 
-const image = modules.define('image')
-.export(function (defs) {
+const image = modules.define('image', function (defs) {
 	
 	let imageCache = {};
 	const imageList = [
