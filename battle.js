@@ -3,6 +3,7 @@
 const battle = modules.define('battle')
 .import('game')
 .import('map_screen')
+.import('image')
 .export(function (defs) {
 	// Battle screen
     var game = defs.game;
@@ -94,17 +95,28 @@ const battle = modules.define('battle')
             ctx.textAlign = "left";
             for (var i=0; i<allies.length; i++) {
                 var a = allies[i];
+
+				// Draw name and HP
                 ctx.font = "bold 18pt sans-serif";
                 ctx.fillStyle = "#0f0";
                 if (a.hp <= 0) ctx.fillStyle = "#888";
 				var txt = a.name + " " + a.hp;
 				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, 20, 22*(i+1));
-				// Temporary Sprites
-                ctx.fillStyle = "#9f9";
-				if (active == allies[i]) ctx.fillStyle = "#0f0";
-				ctx.fillRect(allyIcons.x, allyIcons.ys+(i*allyIcons.yi), allyIcons.w, allyIcons.h);
 
+				let {x, y, w, h} = allyIcons;
+				y = allyIcons.ys+i*allyIcons.yi;
+
+				// Highlight if active turn
+				if (active == allies[i]) {
+					ctx.fillStyle = "#0f0";
+					ctx.fillRect(x, y, w, h);
+				}
+
+				// Draw sprite
+				defs.image.drawImage(ctx, 'Game Jam Art/Blue Hair Sprite finish.png', x, y);
+
+				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
                 ctx.fillStyle = "#444";
                 ctx.fillText((a.cd/1000).toFixed(1), txtw+26, 22*(i+1));
@@ -133,7 +145,7 @@ const battle = modules.define('battle')
 				
                 ctx.font = "bold 14pt sans-serif";
                 ctx.fillStyle = "#444";
-                ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-txtw-30, 22*(i+1));
+                ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-ctx.measureText(txt).width-44, 22*(i+1));
             }
         };
 		
