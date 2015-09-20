@@ -6,7 +6,6 @@ const audio = modules.define('audio')
 	
 	const {loader} = defs;
 	
-	let soundCache = {};
 	const soundList = [
 		// TODO: Add more audio files to this list.
 		'hello.wav',
@@ -42,6 +41,12 @@ const audio = modules.define('audio')
 	};
 		
 	// ----- Music -----
+	const musicList = [
+		{ name: 'battle', intro: 'music/battle_intro.ogg', loop: 'music/battle_loop.ogg' },
+		{ name: 'dungeon', intro: 'music/dungeon_intro.ogg', loop: 'music/dungeon_loop.ogg' },
+		{ name: 'lost', intro: 'music/lost.ogg' }
+	];
+	const songs = {};
 	
 	// Check for HTML Audio API support
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -86,7 +91,7 @@ const audio = modules.define('audio')
 			catch(unused) { sendError(); }
 		},
 		extensions: ['mp3','ogg'], 
-		fallback: 'hello.wav'
+		fallback: null
 	});
 	
 	// Save buffer data from decoded music clip
@@ -120,10 +125,14 @@ const audio = modules.define('audio')
 	// ----- Song object -----
 	function Song(intro, loop) {
 		this.introClip = loader.get(intro);
-		this.introLength = this.introClip.buffer.duration;
+		if (this.introClip !== null) {
+			this.introLength = this.introClip.buffer.duration;
+		}
 		
 		this.loopClip = loader.get(loop);
-		this.loopLength = this.loopClip.buffer.duration;
+		if (this.loopClip !== null) {
+			this.loopLength = this.loopClip.buffer.duration;
+		}
 		
 		this.pos = 0;
 	}
@@ -157,14 +166,32 @@ const audio = modules.define('audio')
 	};
 	
 	exports.loadMusic = function (cb) {
-		loader.load(['music/battle_intro.ogg','music/battle_loop.ogg']).then(function () {
-			var battle = new Song(
-				'music/battle_intro.ogg',
-				'music/battle_loop.ogg');
+		var clips = Array.prototype.concat.apply([], musicList.map(function (x) {
+			var subclips = [];
+			if (x.intro !== undefined) subclips.push(x.intro);
+			if (x.loop !== undefined) subclips.push(x.loop);
+			return subclips;
+		}));
+		
+		loader.load(clips).then(function () {
+			musicList.map(function (x) {
+				var song = new Song(x.intro, x.loop);
+				songs[x.name] = song;
+			});
 			
-			battle.play();
 			cb();
 		});
+	};
+	
+	exports.playMusic = function (song) {
+		if (audio.currentSong !== song) {
+			var lastSong = songs[audio.currentSong];
+			if (lastSong) { lastSong.stop(); }
+			audio.currentSong = song;
+			songs[song].play(0);
+		} else if (!audio.musicPlaying) {
+			songs[song].play();
+		}		
 	};
 	
 	return exports;

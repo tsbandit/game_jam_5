@@ -1,6 +1,7 @@
 (function() {
    
 const map_screen = modules.define('map_screen')
+.import('audio')
 .import('game')
 .import('image')
 .import('battle')
@@ -8,8 +9,10 @@ const map_screen = modules.define('map_screen')
 .export(function (defs) {
     
     const exports = {};
-	const {game,image,battle,util} = defs;
+	const {audio,game,image,battle,util} = defs;
 	exports.initUi = function () {
+		audio.playMusic('dungeon');
+				
 		const draw_disc = function(ctx, x, y, r, c) {
 			ctx.fillStyle = c;
 

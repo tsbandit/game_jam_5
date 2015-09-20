@@ -1,12 +1,13 @@
 (function() {
 
 const battle = modules.define('battle')
+.import('audio')
 .import('game')
 .import('map_screen')
 .import('image')
 .export(function (defs) {
 	// Battle screen
-    var game = defs.game;
+    const {audio, game} = defs;
     
 	var module = {};
     
@@ -75,6 +76,8 @@ const battle = modules.define('battle')
 	}
 	
 	module.initUi = function (map_ui) {
+		
+		audio.playMusic('battle');
 		
 		allies = [];
 		enemies = [];
@@ -323,6 +326,7 @@ const battle = modules.define('battle')
 			},
             mouse_clicked: function({mx,my}) {
                 game.ui = map_ui;
+				audio.playMusic('dungeon');
 			},
 		};
 		
@@ -333,6 +337,7 @@ const battle = modules.define('battle')
 			},
             mouse_clicked: function({mx,my}) {
                 game.ui = map_ui;
+				audio.playMusic('dungeon');
 			},
 		};
 		

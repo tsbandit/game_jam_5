@@ -74,11 +74,14 @@ const loader = modules.define('loader')
 	// Fetch a resource from the cache.
 	function get(filename) {
 		let cacheLine = cache[filename];
-		if (cacheLine.ready && !cacheLine.error) {
-			return cacheLine.resource;
-		} else {
-			return get(cacheLine.format.fallback);
+		if (cacheLine) {
+			if (cacheLine.ready && !cacheLine.error) {
+				return cacheLine.resource;
+			} else {
+				return get(cacheLine.format.fallback);
+			}
 		}
+		return null;
 	}
 	
 	return {
