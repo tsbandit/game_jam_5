@@ -65,7 +65,7 @@ const battle = modules.define('battle')
         allies.push(new Combatant("Carl", 9, 3, 1.4));
         
         enemies.push(new Combatant("Foo", 3, 2, 2.7));
-        enemies.push(new Combatant("Bar", 4, 2, 2.5));
+        enemies.push(new Combatant("Barbarbarbar", 4, 2, 2.5));
         enemies.push(new Combatant("Baz", 5, 2, 2.2));
 		
 		var overButton = function(mx, my, button) {
@@ -98,6 +98,7 @@ const battle = modules.define('battle')
                 ctx.fillStyle = "#0f0";
                 if (a.hp <= 0) ctx.fillStyle = "#888";
 				var txt = a.name + " " + a.hp;
+				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, 20, 22*(i+1));
 				// Temporary Sprites
                 ctx.fillStyle = "#9f9";
@@ -106,7 +107,7 @@ const battle = modules.define('battle')
 
                 ctx.font = "bold 14pt sans-serif";
                 ctx.fillStyle = "#444";
-                ctx.fillText((a.cd/1000).toFixed(1), ctx.measureText(txt).width+44, 22*(i+1));
+                ctx.fillText((a.cd/1000).toFixed(1), txtw+26, 22*(i+1));
 			}
         };
         
@@ -118,6 +119,7 @@ const battle = modules.define('battle')
                 ctx.fillStyle = "#f00";
                 if (e.hp <= 0) ctx.fillStyle = "#888";
                 var txt = e.name + " " + e.hp;
+				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, game.WIDTH-20, 22*(i+1));
 				
 				// Temporary Sprites
@@ -129,11 +131,9 @@ const battle = modules.define('battle')
 				}
 				ctx.fillRect(enemyIcons.x, enemyIcons.ys+(i*enemyIcons.yi), enemyIcons.w, enemyIcons.h);
 				
-				debugger;
                 ctx.font = "bold 14pt sans-serif";
                 ctx.fillStyle = "#444";
-                ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-ctx.measureText(txt).width-44, 22*(i+1));
-				debugger;
+                ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-txtw-30, 22*(i+1));
             }
         };
 		
@@ -149,12 +149,16 @@ const battle = modules.define('battle')
 		
 		var tickCooldowns = function(elapsed) {
 			for (var i=0; i<allies.length; i++) {
-				allies[i].cd -= elapsed;
-				if (allies[i].cd < 0) refundCooldowns(-allies[i].cd);
+				if (allies[i].hp > 0) {
+					allies[i].cd -= elapsed;
+					if (allies[i].cd < 0) refundCooldowns(-allies[i].cd);
+				}
 			}
 			for (var i=0; i<enemies.length; i++) {
-				enemies[i].cd -= elapsed;
-				if (enemies[i].cd < 0) refundCooldowns(-enemies[i].cd);
+				if (enemies[i].hp > 0) {
+					enemies[i].cd -= elapsed;
+					if (enemies[i].cd < 0) refundCooldowns(-enemies[i].cd);
+				}
 			}
 		};
 		
