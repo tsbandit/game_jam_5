@@ -17,6 +17,17 @@ const map_screen = modules.define('map_screen')
 		let px = 0;
 		let py = 0;
 
+		const grid = [];
+		for(let i=0; i<4; ++i) {
+			grid.push([]);
+			for(let j=0; j<5; ++j)
+				grid[i].push({});
+		}
+
+		const draw_room = function(ctx, x, y) {
+			game.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', BASE_X+ROOM_W*x, BASE_Y+ROOM_H*y);
+		};
+
 		return {
 			draw: function (ctx) {
 				// For debugging purposes
@@ -24,9 +35,9 @@ const map_screen = modules.define('map_screen')
 				ctx.font = '16px sans-serif';
 				ctx.fillText('Click here to enter battle', 0, 30);
 
-				for(let i=0; i<4; ++i)
-					for(let j=0; j<4; ++j)
-						image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', BASE_X+ROOM_W*j, BASE_Y+ROOM_H*i);
+				for(let i=0; i<grid.length; ++i)
+					for(let j=0; j<grid[i].length; ++j)
+						draw_room(ctx, j, i);
 
 				// Draw player
 				ctx.beginPath();
@@ -41,7 +52,10 @@ const map_screen = modules.define('map_screen')
 				if(mx < 178 && my < 50)
 					return game.ui = battle.initUi();
 
-				//
+				if(mx >= BASE_X  &&  my >= BASE_Y) {
+					px = Math.floor((mx-BASE_X)/ROOM_W);
+					py = Math.floor((my-BASE_Y)/ROOM_H);
+				}
 			},
 		};
 	};
