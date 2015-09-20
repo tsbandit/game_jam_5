@@ -2,10 +2,11 @@
 
 const title = modules.define('title')
 .import('game')
+.import('audio')
 .import('map_screen')
 .export(function (defs) {
 	// Title screen
-	var game = defs.game;
+	const {game, audio, map_screen} = defs;
 	
 	var exports = {};
 	
@@ -21,7 +22,8 @@ const title = modules.define('title')
 				
 			},
 			mouse_clicked: function(ev) {
-				game.ui = defs.map_screen.initUi();
+				audio.playSound('hello.wav');
+				game.ui = map_screen.initUi();
 			},
 		}
 		return ui;
