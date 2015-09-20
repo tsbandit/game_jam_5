@@ -149,17 +149,6 @@ const battle = modules.define('battle')
             }
         };
 		
-		var drawOther = function(ctx) {
-			if (alliesDead()) {
-				ctx.font = "bold 24pt sans-serif";
-				ctx.fillStyle = "#000";
-				ctx.textAlign = "center";
-				ctx.fillText('YOU LOSE', game.WIDTH/2, game.HEIGHT/5);
-				ctx.font = "bold 16pt sans-serif";
-				ctx.fillText('Click to continue.', game.WIDTH/2, game.HEIGHT/5+30);
-			}
-		};
-		
 		var drawMenu = function(ctx, attacker) {
 			ctx.fillStyle = attackButton.fill;
 			var b = attackButton;
@@ -189,8 +178,25 @@ const battle = modules.define('battle')
 				enemies[i].cd += n;
 			}
 		};
+				
+		var drawStandard = function(ctx) {
+			drawAllies(ctx);
+			drawEnemies(ctx);
+		};
 		
+		var drawEnd = function(ctx, victory) {
+			ctx.font = "bold 24pt sans-serif";
+			ctx.fillStyle = "#000";
+			ctx.textAlign = "center";
+			ctx.fillText("YOU " + (victory ? "WIN" : "LOSE"), game.WIDTH/2, game.HEIGHT/5);
+			ctx.font = "bold 16pt sans-serif";
+			ctx.fillText('Click to continue.', game.WIDTH/2, game.HEIGHT/5+30);
+		};
+        
 		var tickAllies = function(elapsed) {
+			if (enemiesDead()) {
+				game.ui = victory_ui;
+			}
 			for (var i=0; i<allies.length; i++) {
 				var a = allies[i];
 				if (a.cd <= 0) {
@@ -201,13 +207,7 @@ const battle = modules.define('battle')
 				}
 			}
 		};
-		
-		var drawStandard = function(ctx) {
-			drawAllies(ctx);
-			drawEnemies(ctx);
-			drawOther(ctx);
-		};
-        
+
         var tickEnemies = function(elapsed) {
             for (var i=0; i<enemies.length; i++) {
                 var e = enemies[i];
@@ -238,6 +238,26 @@ const battle = modules.define('battle')
             }
             return true;
         };
+		
+		var victory_ui = {
+			draw: function (ctx) {
+				drawStandard(ctx);
+				drawEnd(ctx, true);
+			},
+            mouse_clicked: function({mx,my}) {
+                game.ui = defs.map_screen.initUi();
+			},
+		};
+		
+		var defeat_ui = {
+			draw: function (ctx) {
+				drawStandard(ctx);
+				drawEnd(ctx, false);
+			},
+            mouse_clicked: function({mx,my}) {
+                game.ui = defs.map_screen.initUi();
+			},
+		};
 		
 		// MAIN MENU UI
 		var menu_ui = {
