@@ -1,18 +1,11 @@
 (function() {
-
-const map_screen = modules.define('map_screen', {});
-
-}());
-
-(function() {
    
-const map_screen_post = modules.define('map_screen_post')
+const map_screen = modules.define('map_screen')
 .import('game')
 .import('battle')
-.import('map_screen')
 .export(function (defs) {
     
-    const exports = defs.map_screen;
+    const exports = {};
 	
 	exports.initUi = function () {
 		var Game = defs.game;

@@ -20,7 +20,7 @@ window.modules = (function () {
 	var waiting = [];
 	// Notify the modules system that a module is ready
 	function modules_notify() {
-		for (var i = 0; i < waiting.length; ++i) {
+		for (var i = waiting.length - 1; i >= 0; ++i) {
 			var next = waiting[i];
 			var defs = module_resolve(next);
 			
@@ -50,11 +50,21 @@ window.modules = (function () {
 		
 		for (var i = 0; i < module._dependencies.length; ++i) {
 			var name = module._dependencies[i];
-			if (modules.definitions[name] === undefined) return null;
-			defs[name] = modules.definitions[name];
+			if (modules.definitions[name] !== undefined) {
+				defs[name] = modules.definitions[name];
+			} else {
+				defs[name] = module_in_queue(name);
+				if (defs[name] === undefined) return null;
+			}
 		}
 		
 		return defs;
+	}
+	
+	function module_in_queue(name) {
+		for (var w = 0; w < waiting.length; ++w) {
+			if (waiting[w].name === name) { return waiting[w]; }
+		}
 	}
 	
 	// Add properties to a base object (shallow)
