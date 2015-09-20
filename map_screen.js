@@ -48,7 +48,7 @@ const map_screen = modules.define('map_screen')
 				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red')
 		};
 
-		return {
+		const ui = {
 			draw: function (ctx) {
 				// For debugging purposes
 				ctx.textAlign = 'left';
@@ -70,12 +70,19 @@ const map_screen = modules.define('map_screen')
 				if(mx < 178 && my < 50)
 					return game.ui = battle.initUi();
 
-				if(mx >= BASE_X  &&  my >= BASE_Y) {
-					px = Math.floor((mx-BASE_X)/ROOM_W);
-					py = Math.floor((my-BASE_Y)/ROOM_H);
+				const rx = Math.floor((mx-BASE_X)/ROOM_W);
+				const ry = Math.floor((my-BASE_Y)/ROOM_H);
+				if(ry >= 0  &&  ry < grid.length  &&  rx >= 0  &&  rx < grid[ry].length) {
+					px = rx;
+					py = ry;
+
+					if(grid[ry][rx].mob)
+						return game.ui = battle.initUi(ui);
 				}
 			},
 		};
+
+		return ui;
 	};
 	
 	return exports;
