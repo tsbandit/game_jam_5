@@ -28,7 +28,7 @@ const battle = modules.define('battle')
     var allies;
     var enemies;
 	
-	module.initUi = function () {
+	module.initUi = function (map_ui) {
 		
 		allies = [];
 		enemies = [];
@@ -126,7 +126,7 @@ const battle = modules.define('battle')
 			},
             mouse_clicked: function(ev) {
                 if (alliesDead()) {
-					game.ui = defs.map_screen.initUi();
+					game.ui = map_ui;
 				}
 			},
 		};
