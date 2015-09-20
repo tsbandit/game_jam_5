@@ -27,7 +27,7 @@ const map_screen = modules.define('map_screen')
 
 		const make_room = function(x, y) {
 			const mob = (Math.random() < 0.3);
-			return {mob:mob, x:x, y:y};
+			return {mob:mob, x:x, y:y, visible:false};
 		};
 
 		const grid = [];
@@ -37,8 +37,15 @@ const map_screen = modules.define('map_screen')
 				grid[i].push(make_room(j, i));
 		}
 
+		grid[0][0].visible = true;
+		grid[1][0].visible = true;
+		grid[0][1].visible = true;
+
 		const draw_room = function(ctx, x, y) {
 			const room = grid[y][x];
+
+			if(!room.visible)
+				return;
 
 			const sx = BASE_X+ROOM_W*x;
 			const sy = BASE_Y+ROOM_H*y;
@@ -46,7 +53,7 @@ const map_screen = modules.define('map_screen')
 			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
 
 			if(room.mob)
-				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red')
+				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red');
 		};
 
 		const ui = {
