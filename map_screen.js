@@ -24,37 +24,7 @@ const map_screen = modules.define('map_screen')
 
 		let px = 0;
 		let py = 0;
-
-		const make_room = function(x, y) {
-			const mob = (Math.random() < 0.3);
-			return {mob:mob, x:x, y:y, visible:false};
-		};
-
 		const grid = [];
-		for(let i=0; i<4; ++i) {
-			grid.push([]);
-			for(let j=0; j<5; ++j)
-				grid[i].push(make_room(j, i));
-		}
-
-		grid[0][0].visible = true;
-		grid[1][0].visible = true;
-		grid[0][1].visible = true;
-
-		const draw_room = function(ctx, x, y) {
-			const room = grid[y][x];
-
-			if(!room.visible)
-				return;
-
-			const sx = BASE_X+ROOM_W*x;
-			const sy = BASE_Y+ROOM_H*y;
-
-			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
-
-			if(room.mob)
-				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red');
-		};
 
 		const valid_coord = function(rx, ry) {
 			return ry >= 0
@@ -72,6 +42,57 @@ const map_screen = modules.define('map_screen')
 				yield grid[y-1][x];
 			if(valid_coord(x, y+1))
 				yield grid[y+1][x];
+		};
+
+		const update_visibility = function() {
+			const room = grid[py][px]
+			room.visible = true;
+			for(let r of adjacents(room))
+				r.visible = true;
+		}
+
+		const make_room = function(x, y) {
+			// Legal types: 'mob', 'empty', 'stair_forward'
+
+			const type = (Math.random() < 0.3) ?  'mob' :  'empty';
+
+			return {
+				type: type,
+				x: x,
+				y: y,
+				visible: false,
+			};
+		};
+
+		// Generate the map
+		{
+			for(let i=0; i<4; ++i) {
+				grid.push([]);
+				for(let j=0; j<5; ++j)
+					grid[i].push(make_room(j, i));
+			}
+			update_visibility();
+
+			grid[py][px].type = 'empty';
+
+			const stair_y = Math.floor(grid.length * Math.random());
+			const stair_x = Math.floor(grid[stair_y].length * Math.random());
+			grid[stair_y][stair_x].type = 'stair_forward';
+		}
+
+		const draw_room = function(ctx, x, y) {
+			const room = grid[y][x];
+
+			if(!room.visible)
+				return;
+
+			const sx = BASE_X+ROOM_W*x;
+			const sy = BASE_Y+ROOM_H*y;
+
+			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
+
+			if(room.type === 'mob')
+				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red');
 		};
 
 		const ui = {
@@ -100,13 +121,12 @@ const map_screen = modules.define('map_screen')
 
 				px = rx;
 				py = ry;
-				for(let r of adjacents(room))
-					r.visible = true;
+				update_visibility();
 
-				if(room.mob) {
+				if(room.type === 'mob') {
 					const todo = x => console.log('TODO: '+x);
 					todo("Maybe don't remove the mob until AFTER battle???");
-					room.mob = false;
+					room.type = 'empty';
 
 					return game.ui = battle.initUi(ui);
 				}
