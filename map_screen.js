@@ -2,11 +2,12 @@
    
 const map_screen = modules.define('map_screen')
 .import('game')
+.import('image')
 .import('battle')
 .export(function (defs) {
     
     const exports = {};
-	const {game,battle} = defs;
+	const {game,image,battle} = defs;
 	exports.initUi = function () {
 		const draw_disc = function(ctx, x, y, r, c) {
 			ctx.fillStyle = c;
@@ -42,7 +43,7 @@ const map_screen = modules.define('map_screen')
 			const sx = BASE_X+ROOM_W*x;
 			const sy = BASE_Y+ROOM_H*y;
 
-			game.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
+			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
 
 			if(room.mob)
 				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red')
