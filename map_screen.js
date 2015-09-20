@@ -103,8 +103,13 @@ const map_screen = modules.define('map_screen')
 				for(let r of adjacents(room))
 					r.visible = true;
 
-				if(room.mob)
+				if(room.mob) {
+					const todo = x => console.log('TODO: '+x);
+					todo("Maybe don't remove the mob until AFTER battle???");
+					room.mob = false;
+
 					return game.ui = battle.initUi(ui);
+				}
 			},
 		};
 
