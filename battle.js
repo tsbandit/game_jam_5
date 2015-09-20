@@ -1,8 +1,12 @@
-var moduleName = "battle";
+(function() {
 
-window.modules = window.modules || {};
-window.modules[moduleName] = (function () {
+const title = modules.define('battle')
+.import('game')
+.import('map_screen')
+.export(function (defs) {
 	// Battle screen
+    var game = defs.game;
+    
 	var module = {};
     
     var Combatant = function(name, hp, dmg, speed) {
@@ -35,7 +39,6 @@ window.modules[moduleName] = (function () {
         enemies.push(new Combatant("Baz", 5, 2, 7.2));
         
         var drawAllies = function(ctx) {
-            var Game = window.modules.game;
             ctx.textAlign = "left";
             for (var i=0; i<allies.length; i++) {
                 var a = allies[i];
@@ -47,7 +50,6 @@ window.modules[moduleName] = (function () {
         };
         
         var drawEnemies = function(ctx) {
-            var Game = window.modules.game;
             ctx.textAlign = "right";
             for (var i=0; i<enemies.length; i++) {
                 var e = enemies[i];
@@ -55,7 +57,7 @@ window.modules[moduleName] = (function () {
                 ctx.font = "bold 18pt sans-serif";
                 ctx.fillStyle = "#f00";
                 if (e.hp <= 0) ctx.fillStyle = "#888";
-                ctx.fillText(txt, Game.WIDTH-20, 22*(i+1));
+                ctx.fillText(txt, game.WIDTH-20, 22*(i+1));
                 //ctx.font = "bold 14pt sans-serif";
                 //ctx.fillStyle = "#444";
                 //ctx.fillText(e.cd.toFixed(2), Game.WIDTH-ctx.measureText(txt).width-44, 22*(i+1));
@@ -101,4 +103,6 @@ window.modules[moduleName] = (function () {
 	};
 	
 	return module;
+});
+
 }());

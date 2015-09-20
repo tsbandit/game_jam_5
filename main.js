@@ -148,6 +148,7 @@ util.barrier = function(spawner, cb) {
 modules.define('main')
 .import('title')
 .import('image')
+.import('battle')
 .export(function (defs) {
 	game.loadImages(function () {
 		ui = defs.title.initUi();
