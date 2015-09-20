@@ -12,46 +12,23 @@ defs.util.run_async(function*(resume) {
 ////////////////////////////////////////////////////////////////////////
 // MAIN THREAD
 	
-	const game = defs.game;
+	const {game, util, input, title} = defs;
 	
 	// Wait until the window 'load' event
 	window.addEventListener('load', resume);
 	yield;
 	
-	// Create canvas
-	const canvas = document.createElement('canvas');
-	canvas.setAttribute('width',  game.WIDTH);
-	canvas.setAttribute('height', game.HEIGHT);
-	document.body.appendChild(canvas);
-	game.canvas = canvas;
-
-	// Initialize input
-	defs.input.init();
+	// Initialize canvas
+	game.initCanvas();
 	
-	// Install animation-frame handler
-	{
-		const ctx = canvas.getContext('2d');
-		ctx.fillStyle = 'red';
-
-		let prev_timestamp = null;
-		const anim = function(timestamp) {
-			if(prev_timestamp === null)
-				prev_timestamp = timestamp - 16;
-
-			(game.ui.tick || (() => {})) (timestamp - prev_timestamp);
-
-			ctx.clearRect(0, 0, game.WIDTH, game.HEIGHT);
-			(game.ui.draw || (() => {})) (ctx);
-
-			prev_timestamp = timestamp;
-			requestAnimationFrame(anim);
-		};
-		requestAnimationFrame(anim);
-	}
-
-	game.loadImages(function () {
-		game.ui = defs.title.initUi();
-	});
+	// Initialize input
+	input.init();
+	
+	// Load images
+	game.loadImages(resume);
+	yield;
+	
+	game.ui = title.initUi();
 // END OF MAIN THREAD
 ////////////////////////////////////////////////////////////////////////
 
