@@ -1,28 +1,19 @@
 (function() {
-
-const map_screen = modules.define('map_screen', {});
-
-}());
-
-(function() {
    
-const map_screen_post = modules.define('map_screen_post')
+const map_screen = modules.define('map_screen')
 .import('game')
 .import('battle')
-.import('map_screen')
 .export(function (defs) {
     
-    const exports = defs.map_screen;
+    const exports = {};
 	
 	exports.initUi = function () {
-		var Game = defs.game;
+		const Game = defs.game;
 		var ui = {
 			draw: function (ctx) {
-				ctx.font = "bold 24pt sans-serif";
-				ctx.fillStyle = "#000";
-				ctx.textAlign = "center";
-
-				ctx.fillText('foo', Game.WIDTH/4, Game.HEIGHT/5);
+				for(let i=0; i<4; ++i)
+					for(let j=0; j<4; ++j)
+						Game.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', 50+32*j, 50+32*i);
 			},
 			tick: function (elapsed) {
 				
@@ -35,7 +26,6 @@ const map_screen_post = modules.define('map_screen_post')
 	};
 	
 	return exports;
-    
 });
-    
+
 }());
