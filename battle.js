@@ -4,6 +4,7 @@ const battle = modules.define('battle')
 .import('game')
 .import('map_screen')
 .import('image')
+.import('util')
 .export(function (defs) {
 	// Battle screen
     var game = defs.game;
@@ -324,7 +325,7 @@ const battle = modules.define('battle')
 				}
 
 				// TODO FOR JOE
-				assert(false);
+				defs.util.assert(false);
 				// Below, did you mean 'my' instead of 'y' ???
 
 				if (overButton(mx,y,spellsButton)) {
