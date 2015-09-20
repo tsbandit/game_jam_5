@@ -160,7 +160,7 @@ const battle = modules.define('battle')
 				const y = ys+i*yi;
 
 				// Draw sprite
-				defs.image.drawImage(ctx, 'Game Jam Art/Blue Hair Sprite finish.png', x, y);
+				defs.image.drawImage(ctx, 'char/hero.png', x, y);
 
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";

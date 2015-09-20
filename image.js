@@ -8,9 +8,9 @@ const image = modules.define('image')
 	
 	let imageCache = {};
 	const imageList = [
-		'Game Jam Rooms/Solid Room.png',
-		'Game Jam Art/Blue Hair Sprite finish.png',
-		'Game Jam Items/Stairs Acending stairs.png',
+		'room/room.png',
+		'char/hero.png',
+		'room/stairs.png',
 		'hello.png',
 		'nonexistant.png'
 	];
