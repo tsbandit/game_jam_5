@@ -1,6 +1,6 @@
 (function() {
 
-const title = modules.define('battle')
+const battle = modules.define('battle')
 .import('game')
 .import('map_screen')
 .export(function (defs) {
@@ -30,8 +30,8 @@ const title = modules.define('battle')
 	
 	module.initUi = function () {
         
-        allies.push(new Combatant("Alice", 10, 3, 1.4));
-        allies.push(new Combatant("Bob", 8, 3, 1.4));
+        allies.push(new Combatant("Bobette", 10, 3, 1.4));
+        allies.push(new Combatant("Muscle Sorceress", 8, 3, 1.4));
         allies.push(new Combatant("Carl", 9, 3, 1.4));
         
         enemies.push(new Combatant("Foo", 3, 2, 8.5));

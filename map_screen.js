@@ -1,10 +1,18 @@
 (function() {
 
-const map_screen = modules.define('map_screen')
+const map_screen = modules.define('map_screen', {});
+
+}());
+
+(function() {
+   
+const map_screen_post = modules.define('map_screen_post')
 .import('game')
+.import('battle')
+.import('map_screen')
 .export(function (defs) {
-	// Map screen
-	const exports = {};
+    
+    const exports = defs.map_screen;
 	
 	exports.initUi = function () {
 		var Game = defs.game;
@@ -20,12 +28,14 @@ const map_screen = modules.define('map_screen')
 				
 			},
 			mouse_clicked: function(ev) {
+                defs.game.ui = defs.battle.initUi();
 			},
 		}
 		return ui;
 	};
 	
 	return exports;
+    
 });
-
+    
 }());
