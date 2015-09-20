@@ -24,15 +24,28 @@ const map_screen = modules.define('map_screen')
 		let px = 0;
 		let py = 0;
 
+		const make_room = function(x, y) {
+			const mob = (Math.random() < 0.3);
+			return {mob:mob, x:x, y:y};
+		};
+
 		const grid = [];
 		for(let i=0; i<4; ++i) {
 			grid.push([]);
 			for(let j=0; j<5; ++j)
-				grid[i].push({});
+				grid[i].push(make_room(j, i));
 		}
 
 		const draw_room = function(ctx, x, y) {
-			game.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', BASE_X+ROOM_W*x, BASE_Y+ROOM_H*y);
+			const room = grid[y][x];
+
+			const sx = BASE_X+ROOM_W*x;
+			const sy = BASE_Y+ROOM_H*y;
+
+			game.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
+
+			if(room.mob)
+				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red')
 		};
 
 		return {
