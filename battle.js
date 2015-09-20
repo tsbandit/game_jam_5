@@ -145,7 +145,7 @@ const battle = modules.define('battle')
 				
                 ctx.font = "bold 14pt sans-serif";
                 ctx.fillStyle = "#444";
-                ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-ctx.measureText(txt).width-44, 22*(i+1));
+                ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-txtw-30, 22*(i+1));
             }
         };
 		
@@ -249,7 +249,7 @@ const battle = modules.define('battle')
 				drawEnd(ctx, true);
 			},
             mouse_clicked: function({mx,my}) {
-                game.ui = defs.map_screen.initUi();
+                game.ui = map_ui;
 			},
 		};
 		
@@ -259,7 +259,7 @@ const battle = modules.define('battle')
 				drawEnd(ctx, false);
 			},
             mouse_clicked: function({mx,my}) {
-                game.ui = defs.map_screen.initUi();
+                game.ui = map_ui;
 			},
 		};
 		
@@ -307,11 +307,6 @@ const battle = modules.define('battle')
 				tickCooldowns(elapsed);
 				tickAllies(elapsed);
 				tickEnemies(elapsed);
-			},
-            mouse_clicked: function(ev) {
-                if (alliesDead()) {
-					game.ui = map_ui;
-				}
 			},
 		};
 		return ui;
