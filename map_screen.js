@@ -9,6 +9,14 @@ const map_screen = modules.define('map_screen')
     const exports = {};
 	const {game,image,battle} = defs;
 	exports.initUi = function () {
+		const draw_disc = function(ctx, x, y, r, c) {
+			ctx.fillStyle = c;
+
+			ctx.beginPath();
+			ctx.arc(x, y, r, 0, Math.PI*2);
+			ctx.fill();
+		};
+
 		const BASE_X = 50;
 		const BASE_Y = 50;
 		const ROOM_W = 32;
@@ -17,18 +25,31 @@ const map_screen = modules.define('map_screen')
 		let px = 0;
 		let py = 0;
 
+		const make_room = function(x, y) {
+			const mob = (Math.random() < 0.3);
+			return {mob:mob, x:x, y:y};
+		};
+
 		const grid = [];
 		for(let i=0; i<4; ++i) {
 			grid.push([]);
 			for(let j=0; j<5; ++j)
-				grid[i].push({});
+				grid[i].push(make_room(j, i));
 		}
 
 		const draw_room = function(ctx, x, y) {
-			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', BASE_X+ROOM_W*x, BASE_Y+ROOM_H*y);
+			const room = grid[y][x];
+
+			const sx = BASE_X+ROOM_W*x;
+			const sy = BASE_Y+ROOM_H*y;
+
+			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
+
+			if(room.mob)
+				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red')
 		};
 
-		return {
+		const ui = {
 			draw: function (ctx) {
 				// For debugging purposes
 				ctx.textAlign = 'left';
@@ -40,9 +61,7 @@ const map_screen = modules.define('map_screen')
 						draw_room(ctx, j, i);
 
 				// Draw player
-				ctx.beginPath();
-				ctx.arc(BASE_X+(px+.5)*ROOM_W,BASE_Y+(py+.5)*ROOM_H,12,0,Math.PI*2);
-				ctx.fill();
+				draw_disc(ctx, BASE_X+(px+.5)*ROOM_W, BASE_Y+(py+.5)*ROOM_H, 12, 'black');
 			},
 			tick: function (elapsed) {
 				
@@ -52,12 +71,19 @@ const map_screen = modules.define('map_screen')
 				if(mx < 178 && my < 50)
 					return game.ui = battle.initUi();
 
-				if(mx >= BASE_X  &&  my >= BASE_Y) {
-					px = Math.floor((mx-BASE_X)/ROOM_W);
-					py = Math.floor((my-BASE_Y)/ROOM_H);
+				const rx = Math.floor((mx-BASE_X)/ROOM_W);
+				const ry = Math.floor((my-BASE_Y)/ROOM_H);
+				if(ry >= 0  &&  ry < grid.length  &&  rx >= 0  &&  rx < grid[ry].length) {
+					px = rx;
+					py = ry;
+
+					if(grid[ry][rx].mob)
+						return game.ui = battle.initUi(ui);
 				}
 			},
 		};
+
+		return ui;
 	};
 	
 	return exports;
