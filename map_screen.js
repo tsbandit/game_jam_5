@@ -13,7 +13,7 @@ const map_screen = modules.define('map_screen')
 			draw: function (ctx) {
 				for(let i=0; i<4; ++i)
 					for(let j=0; j<4; ++j)
-						Game.drawImage(ctx, 'All Doors Open Room.psd.png', 50+32*j, 50+27*i);
+						Game.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', 50+32*j, 50+27*i);
 			},
 			tick: function (elapsed) {
 				

@@ -10,8 +10,8 @@ const image = modules.define('image')
 		// Image cache
 		var images = {};
 		// List of all images in the game
-		var	imageList = [
-			'All Doors Open Room.psd.png',
+		const imageList = [
+			'Game Jam Rooms/Solid Room.png',
 			'hello.png'
 		];
 		
@@ -19,14 +19,27 @@ const image = modules.define('image')
 		game.loadImages = function(callback) {
 			var numLoadedImages = 0, i, img;
 			
+			console.log('loading images');
 			for(i = 0;  i < imageList.length;  ++i) {
 				img = new Image();
+				const image_name = imageList[i];
 				images[imageList[i]] = img;
 				// Call the callback after all images are loaded
 				img.onload = function() {
 					++numLoadedImages;
-					if(numLoadedImages == imageList.length)
+					if(numLoadedImages == imageList.length) {
+						console.log('loaded images');
 						callback();
+					}
+				};
+				img.onerror = function() {
+					console.log('Image failed to load: '+image_name);
+
+					++numLoadedImages;
+					if(numLoadedImages == imageList.length) {
+						console.log('loaded images');
+						callback();
+					}
 				};
 				img.src = imageList[i];
 			}
