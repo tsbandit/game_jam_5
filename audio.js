@@ -51,9 +51,7 @@ const audio = modules.define('audio')
 		},
 		
 		loadSounds(cb) {
-			loader.load(soundList).then(function () { 
-				loader.load(['intro.mp3','loop.mp3']).then(cb); 
-			});
+			loader.load(soundList).then(cb);
 			
 			/*var numLoadedsounds = 0, i, snd, cacheLine;
 			
@@ -82,6 +80,10 @@ const audio = modules.define('audio')
 				snd.addEventListener("error", updateCache(cacheLine),false);
 				snd.src = soundList[i];
 			}*/
+		},
+		
+		loadMusic(cb) {
+			loader.load(['intro.mp3','loop.mp3']).then(cb);
 		}
 		
 	};
@@ -168,10 +170,10 @@ const audio = modules.define('audio')
 		cb();
 	};};
 
-	exports.loadMusic = function() {
+	/*exports.loadMusic = function() {
 		loadSound('intro.mp3', callback(intro));
 		loadSound('loop.mp3', callback(loop));
-	};
+	};*/
 	exports.stopMusic = function() {
 		if(!musicShouldBePlaying) {
 			console.log('stopMusic() called when music already stopped!');
