@@ -14,6 +14,18 @@ const image = modules.define('image')
 		'nonexistant.png'
 	];
 		
+	loader.addFormat({
+		type: 'image', 
+		constructor: Image, 
+		load: function (resource, filename, cb) {
+			resource.addEventListener('load', cb, false);
+			resource.addEventListener('error', cb, false);
+			resource.src = filename;
+		},
+		extensions: ['png','jpg','gif','bmp'], 
+		fallback: 'hello.png'
+	});
+		
 	let exports = {
 		
 		drawImage(ctx, filename) {

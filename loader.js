@@ -7,6 +7,8 @@ const loader = modules.define('loader')
 	const {util} = defs;	
 	const cache = {};
 	
+	//const audioContext
+	
 	// File format identification
 	const format = [];
 	function getExtensionPattern(extensions) {
@@ -30,31 +32,6 @@ const loader = modules.define('loader')
 			if (format[i].pattern.test(filename)) return format[i];
 		}
 	}
-	
-	// Add default formats
-	addFormat({
-		type: 'image', 
-		constructor: Image, 
-		load: function (resource, filename, cb) {
-			resource.addEventListener('load', cb, false);
-			resource.addEventListener('error', cb, false);
-			resource.src = filename;
-		},
-		extensions: ['png','jpg','gif','bmp'], 
-		fallback: 'hello.png'
-	});
-	addFormat({
-		type: 'sound', 
-		constructor: Audio, 
-		load: function (resource, filename, cb) {
-			resource.addEventListener('canplaythrough', cb, false);
-			resource.addEventListener('error', cb, false);
-			resource.src = filename;
-		},
-		extensions: ['wav'], 
-		fallback: 'hello.wav'
-	});
-	//addFormat('music', Audio, ['mp3','ogg']);
 	
 	// Load an arbitrary amount of arbitrary resources
 	function load() {

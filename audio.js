@@ -14,6 +14,18 @@ const audio = modules.define('audio')
 	];
 	
 	// Sounds
+	loader.addFormat({
+		type: 'sound', 
+		constructor: Audio, 
+		load: function (resource, filename, cb) {
+			resource.addEventListener('canplaythrough', cb, false);
+			resource.addEventListener('error', cb, false);
+			resource.src = filename;
+		},
+		extensions: ['wav'], 
+		fallback: 'hello.wav'
+	});	
+	
 	let exports = {
 		
 		MUTE: false,
@@ -39,7 +51,9 @@ const audio = modules.define('audio')
 		},
 		
 		loadSounds(cb) {
-			loader.load(soundList).then(cb);
+			loader.load(soundList).then(function () { 
+				loader.load(['intro.mp3','loop.mp3']).then(cb); 
+			});
 			
 			/*var numLoadedsounds = 0, i, snd, cacheLine;
 			
@@ -78,12 +92,35 @@ const audio = modules.define('audio')
 		exports.loadMusic		= function() {};
 		exports.resumeMusic	= function() {};
 		exports.stopMusic		= function() {};
-
+		
 		return;  // EXIT THIS ENTIRE SCOPE
 	}
 
-	var context = new AudioContext();
+	const audioContext = new AudioContext();
+	
+	loader.addFormat({
+		type: 'music', 
+		constructor: XMLHttpRequest,
+		load: function (request, filename, cb) {
+			request.open('GET', filename, true);
+			request.responseType = 'arraybuffer';
 
+			// Decode asynchronously
+			request.onload = function () {
+				audioContext.decodeAudioData(
+					request.response,
+					cb,
+					function () { cb({type:'error'}); }
+				);
+			};
+						
+			try { request.send(); } 
+			catch(unused) {}
+		},
+		extensions: ['mp3','ogg'], 
+		fallback: 'hello.wav'
+	});
+	
 	var loadSound = function(url, callback) {
 		var request = new XMLHttpRequest();
 		request.open('GET', url, true);
