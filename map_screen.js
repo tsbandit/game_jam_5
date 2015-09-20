@@ -95,13 +95,13 @@ const map_screen = modules.define('map_screen')
 
 			const [sx, sy] = screen_coords(x, y);
 
-			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
+			image.drawImage(ctx, 'room/room.png', sx, sy);
 
 			util.dispatch(room, {
 				mob: () =>
 					draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red'),
 				stair_forward: () =>
-					image.drawImage(ctx, 'Game Jam Items/Stairs Acending stairs.png', sx, sy),
+					image.drawImage(ctx, 'room/stairs.png', sx, sy),
 			});
 		};
 
@@ -113,7 +113,7 @@ const map_screen = modules.define('map_screen')
 
 				// Draw player
 				const [sx, sy] = screen_coords(px, py);
-				image.drawImage(ctx, 'Game Jam Art/Blue Hair Sprite finish.png', sx, sy);
+				image.drawImage(ctx, 'char/hero.png', sx, sy);
 			},
 			tick: function (elapsed) {
 				
