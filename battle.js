@@ -322,6 +322,11 @@ const battle = modules.define('battle')
                 if (overButton(mx,my,attackButton)) {
 					game.ui = target_ui(active);
 				}
+
+				// TODO FOR JOE
+				assert(false);
+				// Below, did you mean 'my' instead of 'y' ???
+
 				if (overButton(mx,y,spellsButton)) {
 					
 				}
