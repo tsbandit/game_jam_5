@@ -8,11 +8,11 @@ modules.define('main')
 .import('battle')
 .export(function (defs) {
 	
-defs.util.run_async(function*(resume) {
+const {game, util, input, title} = defs;
+
+util.run_async(function*(resume) {
 ////////////////////////////////////////////////////////////////////////
 // MAIN THREAD
-	
-	const {game, util, input, title} = defs;
 	
 	// Wait until the window 'load' event
 	window.addEventListener('load', resume);
