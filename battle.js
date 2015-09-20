@@ -43,38 +43,65 @@ const battle = modules.define('battle')
     
     var allies;
     var enemies;
-	var attackButton = {
-		name: "ATTACK",
-		x: 40,
-		w: 160,
-		h: 30,
-		fill: "#f99",
-	}
-	var spellsButton = {
-		name: "SPELLS",
-		x: 220,
-		w: 160,
-		h: 30,
-		fill: "#99f",
-		yi: -36,
-	}
-	var enemyIcons = {
-		x: game.WIDTH-80,
-		ys: 120,
-		yi: 50,
-		w: 32,
-		h: 32,
-		over: -1,
-	}
-	var allyIcons = {
-		x: 40,
-		ys: 120,
-		yi: 50,
-		w: 32,
-		h: 32,
-	}
+	
 	
 	module.initUi = function (map_ui) {
+		
+		const BUTTON_X = 40;
+		const BUTTON_Y = game.HEIGHT-40;
+		const BUTTON_W = 160;
+		const BUTTON_H = 30;
+		const BUTTON_B = 6;
+		
+		// Not yet implemented
+		var buttons = [
+		{
+			name: "ATTACK",
+			x: 40,
+			w: 160,
+			h: 30,
+			fill: "#f99",
+		},
+		{
+			name: "SPELLS",
+			x: 220,
+			w: 160,
+			h: 30,
+			fill: "#99f",
+			yi: -36,
+		},
+		];
+		
+		var attackButton = {
+			name: "ATTACK",
+			x: 40,
+			w: 160,
+			h: 30,
+			fill: "#f99",
+		}
+		var spellsButton = {
+			name: "SPELLS",
+			x: 220,
+			w: 160,
+			h: 30,
+			fill: "#99f",
+			yi: -36,
+		}
+		var enemyIcons = {
+			x: game.WIDTH-80,
+			ys: 120,
+			yi: 50,
+			w: 32,
+			h: 32,
+			over: -1,
+		}
+		var allyIcons = {
+			x: 40,
+			ys: 120,
+			yi: 50,
+			w: 32,
+			h: 32,
+		}
 		
 		allies = [];
 		enemies = [];
