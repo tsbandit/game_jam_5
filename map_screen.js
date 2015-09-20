@@ -8,6 +8,14 @@ const map_screen = modules.define('map_screen')
     const exports = {};
 	const {game,battle} = defs;
 	exports.initUi = function () {
+		const draw_disc = function(ctx, x, y, r, c) {
+			ctx.fillStyle = c;
+
+			ctx.beginPath();
+			ctx.arc(x, y, r, 0, Math.PI*2);
+			ctx.fill();
+		};
+
 		const BASE_X = 50;
 		const BASE_Y = 50;
 		const ROOM_W = 32;
@@ -39,9 +47,7 @@ const map_screen = modules.define('map_screen')
 						draw_room(ctx, j, i);
 
 				// Draw player
-				ctx.beginPath();
-				ctx.arc(BASE_X+(px+.5)*ROOM_W,BASE_Y+(py+.5)*ROOM_H,12,0,Math.PI*2);
-				ctx.fill();
+				draw_disc(ctx, BASE_X+(px+.5)*ROOM_W, BASE_Y+(py+.5)*ROOM_H, 12, 'black');
 			},
 			tick: function (elapsed) {
 				
