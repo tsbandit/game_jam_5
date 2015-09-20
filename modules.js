@@ -25,6 +25,7 @@ window.modules = (function () {
 			var defs = module_resolve(next);
 			
 			if (defs === null) {
+				console.log("Failed to load module: "+next.name+" ("+next._dependencies+")");
 				continue;
 			}
 				
@@ -50,8 +51,17 @@ window.modules = (function () {
 		
 		for (var i = 0; i < module._dependencies.length; ++i) {
 			var name = module._dependencies[i];
-			if (modules.definitions[name] === undefined) return null;
-			defs[name] = modules.definitions[name];
+			if (modules.definitions[name] !== undefined) {
+				defs[name] = modules.definitions[name];
+			} else {
+				for (var w = 0; w < waiting.length; ++w) {
+					if (waiting[w].name === name) {
+						defs[name] = waiting[w];
+						break;
+					}
+				}
+				if (defs[name] === undefined) return null;
+			}
 		}
 		
 		return defs;
