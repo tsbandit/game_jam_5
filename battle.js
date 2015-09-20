@@ -55,6 +55,10 @@ const battle = modules.define('battle')
 		
 		allies = [];
 		enemies = [];
+		
+		// Set these after game dimensions have been set
+		attackButton.y = game.HEIGHT-40;
+		enemyIcons.x = game.WIDTH-80;
         
         allies.push(new Combatant("Bobette", 10, 3, 2.0));
         allies.push(new Combatant("Muscle Sorceress", 8, 3, 3.6));
@@ -110,10 +114,10 @@ const battle = modules.define('battle')
             ctx.textAlign = "right";
             for (var i=0; i<enemies.length; i++) {
                 var e = enemies[i];
-                var txt = e.name + " " + e.hp;
                 ctx.font = "bold 18pt sans-serif";
                 ctx.fillStyle = "#f00";
                 if (e.hp <= 0) ctx.fillStyle = "#888";
+                var txt = e.name + " " + e.hp;
                 ctx.fillText(txt, game.WIDTH-20, 22*(i+1));
 				
 				// Temporary Sprites
@@ -125,10 +129,11 @@ const battle = modules.define('battle')
 				}
 				ctx.fillRect(enemyIcons.x, enemyIcons.ys+(i*enemyIcons.yi), enemyIcons.w, enemyIcons.h);
 				
-				
+				debugger;
                 ctx.font = "bold 14pt sans-serif";
                 ctx.fillStyle = "#444";
                 ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-ctx.measureText(txt).width-44, 22*(i+1));
+				debugger;
             }
         };
 		
