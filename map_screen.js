@@ -56,6 +56,24 @@ const map_screen = modules.define('map_screen')
 				draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red');
 		};
 
+		const valid_coord = function(rx, ry) {
+			return ry >= 0
+			    && ry < grid.length
+			    && rx >= 0
+			    && rx < grid[ry].length;
+		};
+
+		const adjacents = function*({x,y}) {
+			if(valid_coord(x-1, y))
+				yield grid[y][x-1];
+			if(valid_coord(x+1, y))
+				yield grid[y][x+1];
+			if(valid_coord(x, y-1))
+				yield grid[y-1][x];
+			if(valid_coord(x, y+1))
+				yield grid[y+1][x];
+		};
+
 		const ui = {
 			draw: function (ctx) {
 				for(let i=0; i<grid.length; ++i)
@@ -71,13 +89,22 @@ const map_screen = modules.define('map_screen')
 			mouse_clicked: function({mx,my}) {
 				const rx = Math.floor((mx-BASE_X)/ROOM_W);
 				const ry = Math.floor((my-BASE_Y)/ROOM_H);
-				if(ry >= 0  &&  ry < grid.length  &&  rx >= 0  &&  rx < grid[ry].length) {
-					px = rx;
-					py = ry;
 
-					if(grid[ry][rx].mob)
-						return game.ui = battle.initUi(ui);
-				}
+				if(!valid_coord(rx,ry))
+					return;
+
+				const room = grid[ry][rx];
+
+				if(!room.visible)
+					return;
+
+				px = rx;
+				py = ry;
+				for(let r of adjacents(room))
+					r.visible = true;
+
+				if(room.mob)
+					return game.ui = battle.initUi(ui);
 			},
 		};
 
