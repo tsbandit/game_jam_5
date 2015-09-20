@@ -101,7 +101,7 @@ const map_screen = modules.define('map_screen')
 				mob: () =>
 					draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red'),
 				stair_forward: () =>
-					image.drawImage(ctx, 'room/stairs.png', sx, sy),
+					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
 			});
 		};
 

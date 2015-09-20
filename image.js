@@ -10,7 +10,7 @@ const image = modules.define('image')
 	const imageList = [
 		'room/room.png',
 		'char/hero.png',
-		'room/stairs.png',
+		'room/stairs_up.png',
 		'hello.png',
 		'nonexistant.png'
 	];
