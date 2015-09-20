@@ -141,8 +141,9 @@ const audio = modules.define('audio')
 		if (pos !== undefined) { this.pos = pos; }
 		
 		if (this.pos < this.introLength) {
-			playClip(this.introClip, 0, false, this.pos);
-			playClip(this.loopClip, this.introLength - this.pos, true, 0);
+			const D = 0.1;  // A small delay; helps eliminate seams
+			playClip(this.introClip, D, false, this.pos);
+			playClip(this.loopClip, D + this.introLength - this.pos, true, 0);
 		} else {
 			playClip(this.loopClip, 0, true, this.pos - this.introLength);
 		}
