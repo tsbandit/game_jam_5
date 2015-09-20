@@ -25,7 +25,7 @@ const map_screen = modules.define('map_screen')
 		}
 
 		const draw_room = function(ctx, x, y) {
-			game.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', BASE_X+ROOM_W*x, BASE_Y+ROOM_H*y);
+			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', BASE_X+ROOM_W*x, BASE_Y+ROOM_H*y);
 		};
 
 		return {
