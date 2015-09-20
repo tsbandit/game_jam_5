@@ -58,11 +58,6 @@ const map_screen = modules.define('map_screen')
 
 		const ui = {
 			draw: function (ctx) {
-				// For debugging purposes
-				ctx.textAlign = 'left';
-				ctx.font = '16px sans-serif';
-				ctx.fillText('Click here to enter battle', 0, 30);
-
 				for(let i=0; i<grid.length; ++i)
 					for(let j=0; j<grid[i].length; ++j)
 						draw_room(ctx, j, i);
@@ -74,10 +69,6 @@ const map_screen = modules.define('map_screen')
 				
 			},
 			mouse_clicked: function({mx,my}) {
-				// For debugging purposes
-				if(mx < 178 && my < 50)
-					return game.ui = battle.initUi();
-
 				const rx = Math.floor((mx-BASE_X)/ROOM_W);
 				const ry = Math.floor((my-BASE_Y)/ROOM_H);
 				if(ry >= 0  &&  ry < grid.length  &&  rx >= 0  &&  rx < grid[ry].length) {
