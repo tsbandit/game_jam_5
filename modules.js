@@ -20,7 +20,7 @@ window.modules = (function () {
 	var waiting = [];
 	// Notify the modules system that a module is ready
 	function modules_notify() {
-		for (var i = waiting.length - 1; i >= 0; ++i) {
+		for (var i = waiting.length - 1; i >= 0; --i) {
 			var next = waiting[i];
 			var defs = module_resolve(next);
 			
@@ -40,6 +40,7 @@ window.modules = (function () {
 			extend(next, newDef);
 			modules.definitions[next.name] = next;
 			waiting.splice(i,1);
+			
 			return modules_notify();
 		}
 	}
