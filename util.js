@@ -1,5 +1,30 @@
 (function() {
+	
+// ----- Promise -----
+function promise() {
+	if (!(this instanceof promise)) { return new promise(); }
+}
 
+promise.prototype.then = function(cb) {
+	this.onComplete = cb;
+	this.chain = new promise();
+	
+	if (this.done) { this.resolve(); }
+	
+	return this.chain;
+};
+
+promise.prototype.resolve = function() {
+	this.done = true;
+	if (typeof this.onComplete === 'function') {
+		this.onComplete.apply(this,arguments);
+	}
+	if (this.chain instanceof promise) {
+		this.chain.resolve.apply(this.chain,arguments);
+	}
+}
+
+// ----- Util -----
 const util = modules.define('util', {
 	assert(b) {
 		if(b)
@@ -55,7 +80,9 @@ const util = modules.define('util', {
 		} else {
 			return f(discriminee);
 		}
-	}
+	},
+	
+	promise
 });
 
 }());
