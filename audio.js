@@ -1,6 +1,10 @@
 (function() {
 
-const audio = modules.define('audio', function (defs) {
+const audio = modules.define('audio')
+.import('loader')
+.export(function (defs) {
+	
+	const {loader} = defs;
 	
 	let soundCache = {};
 	const soundList = [
@@ -35,7 +39,9 @@ const audio = modules.define('audio', function (defs) {
 		},
 		
 		loadSounds(cb) {
-			var numLoadedsounds = 0, i, snd, cacheLine;
+			loader.load(soundList).then(cb);
+			
+			/*var numLoadedsounds = 0, i, snd, cacheLine;
 			
 			function updateCache(line) { return function (ev) {
 				if (ev.type === 'error') {
@@ -61,7 +67,7 @@ const audio = modules.define('audio', function (defs) {
 				// Skip this sound if it failed to load
 				snd.addEventListener("error", updateCache(cacheLine),false);
 				snd.src = soundList[i];
-			}
+			}*/
 		}
 		
 	};

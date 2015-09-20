@@ -12,14 +12,17 @@ const loader = modules.define('loader')
 	function getExtensionPattern(extensions) {
 		return new RegExp('\.('+extensions.join('|')+')$');
 	}
-	function addFormat(type, constructor, extensions, fallback) {
+	function addFormat(options) {
 		format.push({
-			type,
-			constructor,
-			extensions,
-			fallback,
+			type:			options.type,
+			constructor:	options.constructor,
+			extensions:		options.extensions,
+			fallback:		options.fallback,
 			
-			pattern: getExtensionPattern(extensions)
+			load:			options.load,
+			onLoad:			options.onLoad || function (){},
+			
+			pattern:		getExtensionPattern(options.extensions)
 		})
 	}
 	function getFormat(filename) {
@@ -29,9 +32,29 @@ const loader = modules.define('loader')
 	}
 	
 	// Add default formats
-	addFormat('image', Image, ['png','jpg','gif','bmp'], 'hello.png');
-	addFormat('sound', Audio, ['wav'], 'hello.wav');
-	addFormat('music', Audio, ['mp3','ogg']);
+	addFormat({
+		type: 'image', 
+		constructor: Image, 
+		load: function (resource, filename, cb) {
+			resource.addEventListener('load', cb, false);
+			resource.addEventListener('error', cb, false);
+			resource.src = filename;
+		},
+		extensions: ['png','jpg','gif','bmp'], 
+		fallback: 'hello.png'
+	});
+	addFormat({
+		type: 'sound', 
+		constructor: Audio, 
+		load: function (resource, filename, cb) {
+			resource.addEventListener('canplaythrough', cb, false);
+			resource.addEventListener('error', cb, false);
+			resource.src = filename;
+		},
+		extensions: ['wav'], 
+		fallback: 'hello.wav'
+	});
+	//addFormat('music', Audio, ['mp3','ogg']);
 	
 	// Load an arbitrary amount of arbitrary resources
 	function load() {
@@ -59,15 +82,13 @@ const loader = modules.define('loader')
 		// Initiate loading all files
 		for (let i = 0, n = loadTargets.length; i < n; ++i) {
 			const filename = loadTargets[i];
-			let targetFormat = getFormat(filename);
+			let format = getFormat(filename);
 			
-			let resource = new targetFormat.constructor();
-			let cacheLine = { resource, ready: false, error: false };
+			let resource = new format.constructor();
+			let cacheLine = { resource, format, ready: false, error: false };
 			cache[filename] = cacheLine;
 			
-			resource.addEventListener('load', updateCache(cacheLine), false);
-			resource.addEventListener('error', updateCache(cacheLine), false);
-			resource.src = filename;
+			format.load(resource, filename, updateCache(cacheLine));
 		}
 		
 		return promise;
@@ -78,6 +99,8 @@ const loader = modules.define('loader')
 		let cacheLine = cache[filename];
 		if (cacheLine.ready && !cacheLine.error) {
 			return cacheLine.resource;
+		} else {
+			return get(cacheLine.format.fallback);
 		}
 	}
 	
