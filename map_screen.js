@@ -40,7 +40,10 @@ const map_screen = modules.define('map_screen')
 				if(mx < 178 && my < 50)
 					return game.ui = battle.initUi();
 
-				//
+				if(mx >= BASE_X  &&  my >= BASE_Y) {
+					px = Math.floor((mx-BASE_X)/ROOM_W);
+					py = Math.floor((my-BASE_Y)/ROOM_H);
+				}
 			},
 		};
 	};
