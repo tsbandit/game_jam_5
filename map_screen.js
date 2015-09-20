@@ -7,14 +7,12 @@ const map_screen = modules.define('map_screen')
 	const exports = {};
 	
 	exports.initUi = function () {
-		var Game = defs.game;
+		const Game = defs.game;
 		var ui = {
 			draw: function (ctx) {
-				ctx.font = "bold 24pt sans-serif";
-				ctx.fillStyle = "#000";
-				ctx.textAlign = "center";
-
-				ctx.fillText('foo', Game.WIDTH/4, Game.HEIGHT/5);
+				for(let i=0; i<4; ++i)
+					for(let j=0; j<4; ++j)
+						Game.drawImage(ctx, 'All Doors Open Room.psd.png', 50+32*j, 50+27*i);
 			},
 			tick: function (elapsed) {
 				

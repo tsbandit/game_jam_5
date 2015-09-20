@@ -11,6 +11,7 @@ const image = modules.define('image')
 		var images = {};
 		// List of all images in the game
 		var	imageList = [
+			'All Doors Open Room.psd.png',
 			'hello.png'
 		];
 		
