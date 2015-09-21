@@ -130,6 +130,8 @@ const map_screen = modules.define('map_screen')
 					draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red'),
 				stair_forward: () =>
 					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
+				stair_backward: () =>
+					image.drawImage(ctx, 'room/stairs_down.png', sx, sy),
 			});
 		};
 
@@ -172,13 +174,18 @@ const map_screen = modules.define('map_screen')
 				py = ry;
 				update_visibility();
 
-				if(room.type === 'mob') {
-					const todo = x => console.log('TODO: '+x);
-					todo("Maybe don't remove the mob until AFTER battle???");
-					room.type = 'empty';
+				util.dispatch(room, {
+					mob: () => {
+						const todo = x => console.log('TODO: '+x);
+						todo("Maybe don't remove the mob until AFTER battle?");
+						room.type = 'empty';
 
-					return game.ui = battle.initUi(ui);
-				}
+						return game.ui = battle.initUi(ui);
+					},
+					stair_forward: () => {
+						pz++;
+					},
+				});
 			},
 		};
 

@@ -11,6 +11,7 @@ const image = modules.define('image')
 		'room/room.png',
 		'char/hero.png',
 		'room/stairs_up.png',
+		'room/stairs_down.png',
 		'hello.png',
 		'nonexistant.png'
 	];
