@@ -154,6 +154,12 @@ const map_screen = modules.define('map_screen')
 				// Draw player
 				const [sx, sy] = screen_coords(px, py);
 				image.drawImage(ctx, 'char/hero.png', sx, sy);
+
+				// Display current floor number
+				ctx.fillStyle = 'black';
+				ctx.font = 'bold 24px sans-serif';
+				ctx.textAlign = 'left';
+				ctx.fillText(pz, 40, 40);
 			},
 			tick: function (elapsed) {
 				
