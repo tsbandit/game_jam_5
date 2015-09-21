@@ -185,6 +185,7 @@ const audio = modules.define('audio')
 	};
 	
 	exports.playMusic = function (song) {
+		if (audio.MUTE) { return; }
 		if (audio.currentSong !== song) {
 			var lastSong = songs[audio.currentSong];
 			if (lastSong) { lastSong.stop(); }

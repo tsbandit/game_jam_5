@@ -79,7 +79,7 @@ const battle = modules.define('battle')
 		
 		audio.playMusic('battle');
 		
-		allies = [];
+		//allies = [];
 		enemies = [];
 		
 		// Set these after game dimensions have been set
@@ -87,10 +87,12 @@ const battle = modules.define('battle')
 		spellsButton.y = game.HEIGHT-40;
 		enemyIcons.x = game.WIDTH-80;
         
-        allies.push(new Combatant("Bobette", 10, 5, 1.0));
+		allies = game.party.map(x => new Combatant(x.name, x.curhp, x.power, x.speed));
+		
+       /* allies.push(new Combatant("Bobette", 10, 5, 1.0));
         allies.push(new Combatant("Muscle Sorceress", 8, 5, 1.3));
         allies.push(new Combatant("Carl", 9, 5, 1.4));
-        allies.push(new Combatant("Dave", 11, 5, 1.4));
+        allies.push(new Combatant("Dave", 11, 5, 1.4));*/
         
         enemies.push(new Combatant("Foo", 3, 2, 2.7));
         enemies.push(new Combatant("Barbarbarbar", 4, 2, 2.5));
@@ -325,6 +327,10 @@ const battle = modules.define('battle')
 				drawEnd(ctx, true);
 			},
             mouse_clicked: function({mx,my}) {
+				allies.map(function (x,i) {
+					game.party[i].curhp = x.hp;
+				});
+				
                 game.ui = map_ui;
 				audio.playMusic('dungeon');
 			},
