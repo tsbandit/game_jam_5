@@ -7,6 +7,8 @@ const battle = modules.define('battle')
 .export(function (defs) {
 	// Battle screen
     var game = defs.game;
+	var mxg = 0;
+	var myg = 0;
     
 	var module = {};
     
@@ -17,13 +19,6 @@ const battle = modules.define('battle')
         this.speed = speed;
         this.cd = speed*1000;
     };
-	
-	var makeSpell = function({name, cost, target, effect}) { return {
-		name: name,
-		target: target,
-		effect: function(source, target) { effect(source, target); source.mp -= cost; },
-		isPossible: function(source) { return source.mp >= cost; },
-	};};
 	
 	/*
 	Magic Properties:
@@ -43,9 +38,18 @@ const battle = modules.define('battle')
     
     var allies;
     var enemies;
-	
+	var exit = false;
 	
 	module.initUi = function (map_ui) {
+		
+		// === SETUP ============================================
+		
+		allies = [];
+		enemies = [];
+				
+		let buttons = [];
+		let spellButtons = [];
+		let targetButtons = [];
 		
 		const BUTTON_X = 40;
 		const BUTTON_Y = game.HEIGHT-40;
@@ -53,112 +57,320 @@ const battle = modules.define('battle')
 		const BUTTON_H = 30;
 		const BUTTON_B = 6;
 		
-		// Not yet implemented
-		var buttons = [
-		{
+		const ALLY_W = 32;
+		const ALLY_H = 32;
+		const ALLY_B = 16;
+		const ALLY_X = 40;
+		const ALLY_Y = 120;
+		
+		const ENEMY_W = 32;
+		const ENEMY_H = 32;
+		const ENEMY_B = 16;
+		const ENEMY_X = game.WIDTH-40-ENEMY_W;
+		const ENEMY_Y = 120;
+		
+		
+		// === MAKER FUNCTIONS ==================================
+
+		// Columns: 4 total, index 0 is LEFT
+		// Rows: 5 total, index 0 is BOTTOM
+		var makeButtonGrid = function({name, col, row, f2, f1, f0, alwaysDraw, 
+									   activate, deactivate, enabled, allowed, selected}) { return {
+			name: name,
+			x: BUTTON_X + col*(BUTTON_W+BUTTON_B),
+			y: BUTTON_Y - row*(BUTTON_H+BUTTON_B),
+			w: BUTTON_W,
+			h: BUTTON_H,
+			f2: f2,
+			f1: f1,
+			f0: f0,
+			alwaysDraw: alwaysDraw,
+			activate: function() { this.active = true; activate(); },
+			deactivate: function() { this.active = false; deactivate(); },
+			enabled: enabled,
+			allowed: allowed,
+			selected: selected,
+		};};
+		
+		var makeButtonPrecise = function({name, x, y, w, h, f2, f1, f0, 
+										  activate, deactivate, enabled, allowed, selected}) { return {
+			name: name,
+			x: x,
+			y: y,
+			w: w,
+			h: h,
+			f2: f2,
+			f1: f1,
+			f0: f0,
+			activate: function() { this.active = true; activate(); },
+			deactivate: function() { this.active = false; deactivate(); },
+			enabled: enabled,
+			allowed: allowed,
+			selected: selected,
+		};};
+		
+		var makeSpellButtons = function(active) {
+			for (let i=0; i<active.spells.length; i++) {
+				spell = active.spells[i];
+				spellButtons.push(makeButtonGrid({
+					name: spell.name,
+					col: 1,
+					row: 1+i,
+					f2: "#00f",
+					f1: "#99f",
+					f0: "#999",
+					alwaysDraw: false,
+					activate: function() {
+						switch (spell.target) {
+						case "enemy":
+							makeTargetButtons(enemies, spell, active);
+							break;
+						case "ally":
+							makeTargetButtons(allies, spell, active);
+							break;
+						case "allEnemies":
+							for (let e of enemies) { spell.effect(active, e); }
+							exit = true;
+							break;
+						case "allAllies":
+							for (let e of allies) { spell.effect(active, e); }
+							exit = true;
+							break;
+						default:
+							exit = true;
+							break;
+						}
+					},
+					deactivate: function() {
+						
+					},
+					enabled: false,
+					allowed: false,
+					selected: false,
+				}));
+			}
+		};
+		
+		var makeTargetButtons = function(targets, spell, active) {
+			targetButtons = [];
+			for (let target of targets) {
+				let {x, y, w, h} = target;
+				let t = target;
+				targetButtons.push(makeButtonPrecise({
+					x: x,
+					y: y,
+					w: w,
+					h: h,
+					f2: "#f0f",
+					f1: "#f9f",
+					f0: "#999",
+					activate: function() {
+						spell.effect(active, t);
+						exit = true;
+					},
+					deactivate: { },
+					enabled: true,
+					allowed: true,
+					selected: false,
+				}));
+			}
+		}
+		
+		var makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place}) { return {
+			name: name,
+			hp: hp,
+			mp: mp,
+			dmg: dmg,
+			speed: speed,
+			spells: spells,
+			x: ALLY_X,
+			y: ALLY_Y + place*(ALLY_H+ALLY_B),
+			w: ALLY_W,
+			h: ALLY_H,
+			cd: speed*1000,
+		};};
+		
+		var makeEnemyBasic = function({name, hp, dmg, speed, spells, place}) { return {
+			name: name,
+			hp: hp,
+			dmg: dmg,
+			speed: speed,
+			spells: spells,
+			x: ENEMY_X,
+			y: ENEMY_Y + place*(ENEMY_H+ENEMY_B),
+			w: ENEMY_W,
+			h: ENEMY_H,
+			cd: speed*1000,
+		};};
+		
+		var makeSpell = function({name, cost, target, effect}) { return {
+			name: name,
+			target: target,
+			effect: function(source, target) { effect(source, target); source.mp -= cost; },
+			isPossible: function(source) { return source.mp >= cost; },
+		};};
+		
+		var makeBasic
+
+	
+		// === MENU BUTTONS ==================================
+		
+		var attackButton = makeButtonGrid({
 			name: "ATTACK",
-			x: 40,
-			w: 160,
-			h: 30,
-			fill: "#f99",
-		},
-		{
+			col: 0,
+			row: 0,
+			f2: "#f00",
+			f1: "#f99",
+			f0: "#999",
+			alwaysDraw: true,
+			activate: function() {
+				
+			},
+			deactivate: function() {
+				
+			},
+			enabled: true,
+			allowed: true,
+			selected: false,
+		});
+		
+		var spellsButton = makeButtonGrid({
 			name: "SPELLS",
-			x: 220,
-			w: 160,
-			h: 30,
-			fill: "#99f",
-			yi: -36,
-		},
-		];
+			col: 1,
+			row: 0,
+			f2: "#00f",
+			f1: "#99f",
+			f0: "#999",
+			alwaysDraw: true,
+			activate: function() {
+				
+			},
+			deactivate: function() {
+				
+			},
+			enabled: true,
+			allowed: true,
+			selected: false,
+		});
 		
-		var attackButton = {
-			name: "ATTACK",
-			x: 40,
-			w: 160,
-			h: 30,
-			fill: "#f99",
-		}
-		var spellsButton = {
-			name: "SPELLS",
-			x: 220,
-			w: 160,
-			h: 30,
-			fill: "#99f",
-			yi: -36,
-		}
-		var enemyIcons = {
-			x: game.WIDTH-80,
-			ys: 120,
-			yi: 50,
-			w: 32,
-			h: 32,
-			over: -1,
-		}
-		var allyIcons = {
-			x: 40,
-			ys: 120,
-			yi: 50,
-			w: 32,
-			h: 32,
-		}
+
+		// === SPELLS =======================================
 		
-		allies = [];
-		enemies = [];
+		// Not actually a spell, but similarly formatted.
+		let basicAttack = {
+			name: "Attack",
+			target: "enemy",
+			effect: function(source, target) {
+				target.hp -= source.dmg;
+			}
+		};
 		
-		// Set these after game dimensions have been set
-		attackButton.y = game.HEIGHT-40;
-		spellsButton.y = game.HEIGHT-40;
-		enemyIcons.x = game.WIDTH-80;
-        
-        allies.push(new Combatant("Bobette", 10, 5, 1.0));
-        allies.push(new Combatant("Muscle Sorceress", 8, 5, 1.3));
-        allies.push(new Combatant("Carl", 9, 5, 1.4));
-        allies.push(new Combatant("Dave", 11, 5, 1.4));
-        
-        enemies.push(new Combatant("Foo", 3, 2, 2.7));
-        enemies.push(new Combatant("Barbarbarbar", 4, 2, 2.5));
-        enemies.push(new Combatant("Baz", 5, 2, 2.2));
-		
-		// Magic setup (temp)
-		allies[1].spells = [
-		makeSpell({
+		let magicMissile = makeSpell({
 			name: "Magic Missile",
 			cost: 3,
 			target: "enemy",
-			effect: function(target) {
+			effect: function(source, target) {
 				target.hp -= 3;
 			}
-		}),
-		makeSpell({
+		});
+		let firestorm = makeSpell({
 			name: "Firestorm",
 			cost: 7,
 			target: "allEnemies",
-			effect: function(target) {
+			effect: function(source, target) {
 				target.hp -= 4;
 			}
-		}),
-		makeSpell({
+		});
+		let heal = makeSpell({
 			name: "Heal",
 			cost: 4,
 			target: "ally",
-			effect: function(target) {
+			effect: function(source, target) {
 				target.hp += 5;
 			}
-		}),
-		];
+		});
 		
-		var overButton = function(mx, my, button) {
-			return ((mx > button.x) && (mx < button.x+button.w) &&
-					(my > button.y) && (my < button.y+button.h));
+        
+		// === ALLIES ================================
+		
+        allies.push(makeAllyBasic({
+			name: "Bobette",
+			hp: 8,
+			mp: 20,
+			dmg: 5,
+			speed: 1.3,
+			spells: [],
+			place: 0,
+		}));
+        allies.push(makeAllyBasic({
+			name: "Muscle Sorceress",
+			hp: 11, 
+			mp: 20,
+			dmg: 5,
+			speed: 1.2,
+			spells: [magicMissile, firestorm, heal],
+			place: 1,
+		}));
+        allies.push(makeAllyBasic({
+			name: "Carl",
+			hp: 9,
+			mp: 20,
+			dmg: 5,
+			speed: 1.4,
+			spells: [],
+			place: 2,
+		}));
+        allies.push(makeAllyBasic({
+			name: "Dave",
+			hp: 11,
+			mp: 20,
+			dmg: 5,
+			speed: 1.4,
+			spells: [],
+			place: 3,
+		}));
+		
+		// === ENEMIES ================================
+		
+		enemies.push(makeEnemyBasic({
+			name: "Foo",
+			hp: 3,
+			dmg: 2,
+			speed: 2.7,
+			spells: [],
+			place: 0,
+		}));
+		enemies.push(makeEnemyBasic({
+			name: "Barbarbarbar",
+			hp: 4,
+			dmg: 2,
+			speed: 2.5,
+			spells: [],
+			place: 1,
+		}));
+		enemies.push(makeEnemyBasic({
+			name: "Baz",
+			hp: 5,
+			dmg: 2,
+			speed: 2.2,
+			spells: [],
+			place: 2,
+		}));
+		
+		// === THE REST OF IT ==================================
+		
+		var overButton = function(button) {
+			let result = ((mxg > button.x) && (mxg < button.x+button.w) &&
+					(myg > button.y) && (myg < button.y+button.h));
+			return result;
 		}
 		
-		var overAlly = function(mx, my) {
-			return overIcon(mx, my, allyIcons);
+		var overAlly = function() {
+			return overIcon(mxg, myg, allyIcons);
 		}
 		
-		var overEnemy = function(mx, my) {
-			return overIcon(mx, my, enemyIcons);
+		var overEnemy = function() {
+			return overIcon(mxg, myg, enemyIcons);
 		}
 		
 		var overIcon = function(mx, my, t) {
@@ -183,8 +395,7 @@ const battle = modules.define('battle')
 				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, 20, 22*(i+1));
 
-				const {x, w, h, ys, yi} = allyIcons;
-				const y = ys+i*yi;
+				const {x, y} = a;
 
 				// Draw sprite
 				defs.image.drawImage(ctx, 'Game Jam Art/Blue Hair Sprite finish.png', x, y);
@@ -209,11 +420,10 @@ const battle = modules.define('battle')
 				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, game.WIDTH-20, 22*(i+1));
 				
-				const {x, w, h, ys, yi} = enemyIcons;
-				const y = ys+i*yi;
+				const {x, y, w, h} = e;
 				
 				// Draw sprite
-				ctx.fillStyle = (enemyIcons.over == i ? "#f00" : "#f99");
+				ctx.fillStyle = "#f99";
 				ctx.fillRect(x, y, w, h);
 				
 				// Display current cooldown timer
@@ -225,38 +435,52 @@ const battle = modules.define('battle')
 		
 		var drawMenu = function(ctx, attacker) {
 			drawButton(ctx, attackButton);
-			if (hasSpells(attacker)) drawButton(ctx, spellsButton);
+			drawButton(ctx, spellsButton);
 		};
 		
 		var hasSpells = function(combatant) {
 			return combatant.spells && combatant.spells.length > 0;
-		}
+		};
 		
-		var drawSpellsMenu = function(ctx, attacker) {
-			for (let i=0; i<attacker.spells.length; i++) {
-				drawSpellButton(ctx, i, attacker);
+		var drawSpellsMenu = function(ctx, active) {
+			drawButton(ctx, spellsButton);
+			if (spellsButton.enabled) {
+				for (let i=0; i<active.spells.length; i++) {
+					drawSpellButton(ctx, i, spellButtons[i], active);
+				}
+			}
+		};
+		
+		var drawTargets = function(ctx, active) {
+			for (let target of targetButtons) {
+				drawButton(ctx, target);
+			}
+		};
+		
+		var drawButton = function(ctx, button) {
+			let {x, y, w, h, f0, f1, f2, name, enabled, selected, allowed} = button;
+			if (!allowed) ctx.fillStyle = f0;
+			else ctx.fillStyle = (overButton(button) || selected ? f2 : f1);
+			if (enabled) {
+				ctx.fillRect(x, y, w, h);
+				ctx.font = "bold 18pt sans-serif";
+				ctx.fillStyle = "#000";
+				ctx.textAlign = "center";
+				ctx.fillText(name, x+(w/2), y+24);
 			}
 		}
 		
-		var drawButton = function(ctx, b) {
-			ctx.fillStyle = b.fill;
-			ctx.fillRect(b.x, b.y, b.w, b.h);
-			ctx.font = "bold 18pt sans-serif";
-			ctx.fillStyle = "#000";
-			ctx.textAlign = "center";
-			ctx.fillText(b.name, b.x+(b.w/2), b.y+24);
-		}
-		
-		var drawSpellButton = function(ctx, i, active) {
-			const b = spellsButton;
-			const {x, y:yo, yi, w, h, fill, name} = spellsButton;
-			const y = yo+(i+1)*yi;
-			ctx.fillStyle = fill;
-			ctx.fillRect(x, y, w, h);
-			ctx.font = "bold 18pt sans-serif";
-			ctx.fillStyle = "#000";
-			ctx.textAlign = "center";
-			ctx.fillText(active.spells[i].name, x+(w/2), y+24);
+		var drawSpellButton = function(ctx, i, button, active) {
+			const {x, y, w, h, f0, f1, f2, name, enabled, selected} = button;
+			if (enabled) {
+				ctx.fillStyle = (overButton(button) || selected ? f2 : f1);
+				ctx.fillRect(x, y, w, h);
+				ctx.font = "bold 18pt sans-serif";
+				ctx.fillStyle = "#000";
+				ctx.textAlign = "center";
+				ctx.fillText(active.spells[i].name, x+(w/2), y+24);
+			}
+			
 		}
 		
 		var tickCooldowns = function(elapsed) {
@@ -307,7 +531,7 @@ const battle = modules.define('battle')
 					
 					// Menu UI
 //					active = a;
-					game.ui = menu_ui(a);
+					initMenu(a);
 				}
 			}
 		};
@@ -353,6 +577,24 @@ const battle = modules.define('battle')
 			},
 		};
 		
+		var initMenu = function(active) {
+			buttons = [];
+			spellButtons = [];
+			targetButtons = [];
+			
+			makeSpellButtons(active);
+			for (let i=0; i<spellButtons.length; i++) {
+				spellButtons[i].allowed = (active.mp >= active.spells[i].cost);
+			}
+			spellsButton.allowed = active.spells.length > 0;
+			game.ui = menu_ui(active);
+		};
+		
+		var returnToCombat = function() {
+			game.ui = ui;
+//			debugger;
+		};
+		
 		var defeat_ui = {
 			draw: function (ctx) {
 				drawStandard(ctx);
@@ -363,69 +605,66 @@ const battle = modules.define('battle')
 			},
 		};
 		
-		var spells_ui = function(active) { return {
-			draw: function (ctx) {
-				drawStandard(ctx);
-				drawMenu(ctx, active);
-				drawSpellsMenu(ctx, active);
-			},
-            mouse_clicked: function({mx,my}) {
-                if (overButton(mx,my,attackButton)) {
-					game.ui = target_ui(active);
-				}
-			},
-			mouse_moved: function({mx,my}) {
-				if (overButton(mx,my,attackButton)) attackButton.fill = "#f00";
-				else attackButton.fill = "#f99";
-				if (overButton(mx,my,spellsButton)) spellsButton.fill = "#00f";
-				else spellsButton.fill = "#99f";
-			},
-		};};
-		
 		// MAIN MENU UI
 		var menu_ui = function(active) { return {
 			draw: function (ctx) {
-				drawStandard(ctx);
-				drawMenu(ctx, active);
+				if (!exit) {
+					drawStandard(ctx);
+					drawMenu(ctx, active);
+					drawSpellsMenu(ctx, active);
+					drawTargets(ctx, active);
+				}
+				else returnToCombat();
 			},
             mouse_clicked: function({mx,my}) {
-                if (overButton(mx,my,attackButton)) {
-					game.ui = target_ui(active);
+                if (overButton(attackButton)) {
+					spellsButton.selected = false;
+					for (let b of spellButtons) {
+						b.enabled = false;
+						b.selected = false;
+					}
+					attackButton.selected = !attackButton.selected;
+					if (attackButton.selected) {
+						makeTargetButtons(enemies, basicAttack, active);
+					}
+					else targetButtons = [];
 				}
-				if (overButton(mx,my,spellsButton)) {
-					game.ui = spells_ui(active);
+				if (overButton(spellsButton)) {
+					attackButton.selected = false;
+					spellsButton.selected = !spellsButton.selected;
+					for (let b of spellButtons) {
+						b.enabled = spellsButton.selected;
+					}
 				}
+				for (let spellButton of spellButtons) {
+					if (overButton(spellButton)) {
+						let {active, allowed, activate} = spellButton;
+						if (allowed) {
+							for (let sb of spellButtons) sb.allowed = false;
+						}
+					}
+				}
+				for (let targetButton of targetButtons) {
+					if (overButton(targetButton)) {
+						let {active, allowed, activate} = targetButton;
+						if (allowed) {
+							activate();
+							exit = true;
+						}
+					}
+				}
+				//if (exit) returnToCombat();
 			},
 			mouse_moved: function({mx,my}) {
-				if (overButton(mx,my,attackButton)) attackButton.fill = "#f00";
-				else attackButton.fill = "#f99";
-				if (hasSpells(active) && overButton(mx,my,spellsButton)) spellsButton.fill = "#00f";
-				else spellsButton.fill = "#99f";
-			},
-		};};
-		
-		var target_ui = function(active) { return {
-			draw: function (ctx) {
-				drawStandard(ctx);
-				drawMenu(ctx, active);
-			},
-            mouse_clicked: function({mx,my}) {
-                var t = overEnemy(mx, my);
-				if (t > -1) {
-					active.attack(enemies[t]);
-					active.cd += active.speed*1000;
-					game.ui = ui;
-					enemyIcons.over = -1;
-				}
-			},
-			mouse_moved: function({mx,my}) {
-				enemyIcons.over = overEnemy(mx,my);
+				mxg = mx;
+				myg = my;
 			},
 		};};
         
 		var ui = {
 			draw: function (ctx) {
 				drawStandard(ctx);
+				console.log('foo'+ Math.random());
 			},
 			tick: function (elapsed) {
 				tickCooldowns(elapsed);
