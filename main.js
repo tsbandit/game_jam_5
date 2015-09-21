@@ -34,6 +34,7 @@ util.run_async(function*(resume) {
 	yield;
 		
 	game.ui = title.initUi();
+	
 // END OF MAIN THREAD
 ////////////////////////////////////////////////////////////////////////
 

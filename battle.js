@@ -5,12 +5,30 @@ const battle = modules.define('battle')
 .import('game')
 .import('map_screen')
 .import('image')
+.import('util')
 .export(function (defs) {
 	// Battle screen
     var game = defs.game;
+
+	/*
+	
+	{
+		let uis = game.ui;
+		game.ui = undefined;
+		Object.defineProperty(game, 'ui', {
+			get: function() {
+//				if(false)
+//					debugger;
+				return uis;
+			},
+			set: function(x) {return uis = Object.freeze(x);},
+		});
+	}
+	*/
+
 	var mxg = 0;
 	var myg = 0;
-    const {audio, game} = defs;
+    const {audio,util} = defs;
     
 	var module = {};
     
@@ -526,6 +544,7 @@ const battle = modules.define('battle')
 		var tickAllies = function(elapsed) {
 			if (enemiesDead()) {
 				game.ui = victory_ui;
+				return;
 			}
 			for (var i=0; i<allies.length; i++) {
 				var a = allies[i];
@@ -533,7 +552,9 @@ const battle = modules.define('battle')
 					
 					// Menu UI
 //					active = a;
-					initMenu(a);
+					initMenu(a); // TODO MAKE THIS NOT BAD
+					a.cd += a.speed*1000;
+					exit = false;
 				}
 			}
 		};
@@ -622,7 +643,15 @@ const battle = modules.define('battle')
 					drawSpellsMenu(ctx, active);
 					drawTargets(ctx, active);
 				}
-				else returnToCombat();
+				else {
+					console.log("GAME.UI:");
+					console.log(game.ui);
+					console.log("UI:");
+					console.log(ui);
+					game.ui = ui;//returnToCombat();
+					console.log("GAME.UI POST:");
+					console.log(game.ui);
+				}
 			},
             mouse_clicked: function({mx,my}) {
                 if (overButton(attackButton)) {
@@ -666,20 +695,27 @@ const battle = modules.define('battle')
 			mouse_moved: function({mx,my}) {
 				mxg = mx;
 				myg = my;
+				
+				game.ui.hello = 3;
+/*
+				util.assert(Object.isFrozen(game.ui));
+				util.assert(game.ui.hello === 3);
+				util.assert(false);
+*/
 			},
 		};};
         
-		var ui = {
+		var ui = Object.freeze({
 			draw: function (ctx) {
-				drawStandard(ctx);
 				console.log('foo'+ Math.random());
+				drawStandard(ctx);
 			},
 			tick: function (elapsed) {
 				tickCooldowns(elapsed);
 				tickAllies(elapsed);
 				tickEnemies(elapsed);
 			},
-		};
+		});
 		return ui;
 	};
 	

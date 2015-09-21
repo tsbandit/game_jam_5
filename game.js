@@ -6,7 +6,7 @@ const game = modules.define('game')
 	const WIDTH  = 640;
 	const HEIGHT = 480;
 	
-	let ui = {};
+//	let ui = {};
 	
 	function PartyMember(name, hp, power, speed) {
 		this.name = name;
@@ -25,7 +25,7 @@ const game = modules.define('game')
 	var exports = {
 		WIDTH,
 		HEIGHT,
-		ui,
+		ui:{},
 		party,
 		
 		canvas: null,
@@ -62,6 +62,9 @@ const game = modules.define('game')
 				(game.ui.tick || (() => {})) (timestamp - prev_timestamp);
 
 				ctx.clearRect(0, 0, game.WIDTH, game.HEIGHT);
+				if(Math.random() < 0.01)
+					console.log(game.ui.draw);
+
 				(game.ui.draw || (() => {})) (ctx);
 
 				prev_timestamp = timestamp;
