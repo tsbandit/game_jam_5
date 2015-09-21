@@ -3,10 +3,11 @@
 const party_screen = modules.define('party_screen')
 .import('game')
 .import('image')
+.import('battle')
 .export(function (defs) {
     
     const exports = {};
-	const {image, game} = defs;
+	const {image, game, battle} = defs;
 	exports.initUi = function (prevUi) {
 		
 		const statOffset = 260;
@@ -28,15 +29,15 @@ const party_screen = modules.define('party_screen')
 			ctx.fillText('SPEED', x + statOffset, y + statLineHeight * 2);
 			
 			ctx.fillStyle = "#000";
-			ctx.fillText(m.curhp + ' / ' + m.maxhp, x + statOffset + statValueOffset, y);
-			ctx.fillText(m.power, x + statOffset + statValueOffset, y + statLineHeight);
+			ctx.fillText(m.hp + ' / ' + m.maxhp, x + statOffset + statValueOffset, y);
+			ctx.fillText(m.dmg, x + statOffset + statValueOffset, y + statLineHeight);
 			ctx.fillText(m.speed, x + statOffset + statValueOffset, y + statLineHeight * 2);
 		}
 			
 		const ui = {
 			draw: function (ctx) {
-				for (let i = 0; i < game.party.length; ++i) {
-					drawPartyMember(ctx, game.party[i], 40, 40 + i * 100);
+				for (let i = 0; i < battle.allies.length; ++i) {
+					drawPartyMember(ctx, battle.allies[i], 40, 40 + i * 100);
 				}
 			},
 			tick: function (elapsed) {

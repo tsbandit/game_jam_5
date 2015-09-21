@@ -6,16 +6,119 @@ const battle = modules.define('battle')
 .import('map_screen')
 .import('image')
 .import('util')
+.import('title')
 .export(function (defs) {
 	// Battle screen
     var game = defs.game;
+	
+	// === SPELLS ==========================
+	
+	const makeSpell = function({name, cost, target, effect}) { return {
+		name: name,
+		target: target,
+		effect: function(source, target) { effect(source, target); source.mp -= cost; },
+		isPossible: function(source) { return source.mp >= cost; },
+	};};
+	
+	const basicAttack = {
+		name: "Attack",
+		target: "enemy",
+		effect: function(source, target) {
+			target.hp -= source.dmg;
+		}
+	};
+	
+	const magicMissile = makeSpell({
+		name: "Magic Missile",
+		cost: 3,
+		target: "enemy",
+		effect: function(source, target) {
+			target.hp -= 3;
+		}
+	});
+	const firestorm = makeSpell({
+		name: "Firestorm",
+		cost: 7,
+		target: "allEnemies",
+		effect: function(source, target) {
+			target.hp -= 4;
+		}
+	});
+	const heal = makeSpell({
+		name: "Heal",
+		cost: 4,
+		target: "ally",
+		effect: function(source, target) {
+			target.hp += 3;
+		}
+	});
+	
+	// === PARTY ===============================
+	
+	const ALLY_W = 32;
+	const ALLY_H = 32;
+	const ALLY_B = 16;
+	const ALLY_X = 40;
+	const ALLY_Y = 120;
 
+	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place}) { return {
+		name: name,
+		hp: hp,
+		maxhp: hp,
+		mp: mp,
+		dmg: dmg,
+		speed: speed,
+		spells: spells,
+		x: ALLY_X,
+		y: ALLY_Y + place*(ALLY_H+ALLY_B),
+		w: ALLY_W,
+		h: ALLY_H,
+		cd: speed*1000,
+	};};
+	
+	const allies = [];
+	
+	allies.push(makeAllyBasic({
+		name: "Bobette",
+		hp: 8,
+		mp: 20,
+		dmg: 3,
+		speed: 1.0+(Math.PI/100),
+		spells: [],
+		place: 0,
+	}));
+	allies.push(makeAllyBasic({
+		name: "Muscle Sorceress",
+		hp: 11, 
+		mp: 20,
+		dmg: 2,
+		speed: 1.1+(Math.PI/99),
+		spells: [magicMissile, firestorm, heal],
+		place: 1,
+	}));
+	allies.push(makeAllyBasic({
+		name: "Carl",
+		hp: 9,
+		mp: 20,
+		dmg: 3,
+		speed: 1.2+(Math.PI/98),
+		spells: [],
+		place: 2,
+	}));
+	allies.push(makeAllyBasic({
+		name: "Dave",
+		hp: 11,
+		mp: 20,
+		dmg: 4,
+		speed: 1.3+(Math.PI/97),
+		spells: [],
+		place: 3,
+	}));
+	
 	var mxg = 0;
 	var myg = 0;
     const {audio,util} = defs;
-    
-	var module = {};
-    
+        
     var Combatant = function(name, hp, dmg, speed) {
         this.name = name;
         this.hp = hp;
@@ -39,18 +142,18 @@ const battle = modules.define('battle')
     Combatant.prototype.die = function(isAlly) {
         this.hp = 0;
     }
-    
-    var allies;
-    var enemies;
-	var exit = false;
+
+	var module = {
+		allies,
+	};
+
 	
 	module.initUi = function (map_ui) {
 
 		audio.playMusic('battle');
 		
-		allies = [];
-		enemies = [];
-				
+		const enemies = [];
+		
 		let buttons = [];
 		let spellButtons = [];
 		let targetButtons = [];
@@ -60,12 +163,6 @@ const battle = modules.define('battle')
 		const BUTTON_W = 160;
 		const BUTTON_H = 30;
 		const BUTTON_B = 6;
-		
-		const ALLY_W = 32;
-		const ALLY_H = 32;
-		const ALLY_B = 16;
-		const ALLY_X = 40;
-		const ALLY_Y = 120;
 		
 		const ENEMY_W = 32;
 		const ENEMY_H = 32;
@@ -134,14 +231,14 @@ const battle = modules.define('battle')
 							break;
 						case "allEnemies":
 							for (let e of enemies) { spell.effect(active, e); }
-							exit = true;
+							returnToCombat();
 							break;
 						case "allAllies":
 							for (let e of allies) { spell.effect(active, e); }
-							exit = true;
+							returnToCombat();
 							break;
 						default:
-							exit = true;
+							returnToCombat();
 							break;
 						}
 					},
@@ -158,19 +255,21 @@ const battle = modules.define('battle')
 		var makeTargetButtons = function(targets, spell, active) {
 			targetButtons = [];
 			for (let target of targets) {
+				if (target.hp <= 0) continue;
 				let {x, y, w, h} = target;
 				let t = target;
 				targetButtons.push(makeButtonPrecise({
+					name: "",
 					x: x,
 					y: y,
 					w: w,
 					h: h,
-					f2: "#f0f",
-					f1: "#f9f",
-					f0: "#999",
+					f2: "rgba(255,0,0,0.5)",
+					f1: "rgba(255,0,0,0.2)",
+					f0: "rgba(255,0,0,0.5)",
 					activate: function() {
 						spell.effect(active, t);
-						exit = true;
+						returnToCombat();
 					},
 					deactivate: { },
 					enabled: true,
@@ -180,42 +279,19 @@ const battle = modules.define('battle')
 			}
 		}
 		
-		var makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place}) { return {
-			name: name,
-			hp: hp,
-			mp: mp,
-			dmg: dmg,
-			speed: speed,
-			spells: spells,
-			x: ALLY_X,
-			y: ALLY_Y + place*(ALLY_H+ALLY_B),
-			w: ALLY_W,
-			h: ALLY_H,
-			cd: speed*1000,
-		};};
-		
-		var makeEnemyBasic = function({name, hp, dmg, speed, spells, place}) { return {
+		var makeEnemyBasic = function({name, hp, dmg, speed, actions, place, pictureName}) { return {
 			name: name,
 			hp: hp,
 			dmg: dmg,
 			speed: speed,
-			spells: spells,
+			actions: actions,
 			x: ENEMY_X,
 			y: ENEMY_Y + place*(ENEMY_H+ENEMY_B),
 			w: ENEMY_W,
 			h: ENEMY_H,
 			cd: speed*1000,
+			pictureName: pictureName,
 		};};
-		
-		var makeSpell = function({name, cost, target, effect}) { return {
-			name: name,
-			target: target,
-			effect: function(source, target) { effect(source, target); source.mp -= cost; },
-			isPossible: function(source) { return source.mp >= cost; },
-		};};
-		
-		var makeBasic
-
 	
 		// === MENU BUTTONS ==================================
 		
@@ -261,104 +337,65 @@ const battle = modules.define('battle')
 		// === SPELLS =======================================
 		
 		// Not actually a spell, but similarly formatted.
-		let basicAttack = {
-			name: "Attack",
-			target: "enemy",
-			effect: function(source, target) {
-				target.hp -= source.dmg;
-			}
-		};
 		
-		let magicMissile = makeSpell({
-			name: "Magic Missile",
-			cost: 3,
-			target: "enemy",
-			effect: function(source, target) {
-				target.hp -= 3;
-			}
-		});
-		let firestorm = makeSpell({
-			name: "Firestorm",
-			cost: 7,
-			target: "allEnemies",
-			effect: function(source, target) {
-				target.hp -= 4;
-			}
-		});
-		let heal = makeSpell({
-			name: "Heal",
-			cost: 4,
-			target: "ally",
-			effect: function(source, target) {
-				target.hp += 5;
-			}
-		});
 		
-        
-		// === ALLIES ================================
 		
-        allies.push(makeAllyBasic({
-			name: "Bobette",
-			hp: 8,
-			mp: 20,
-			dmg: 5,
-			speed: 1.3,
-			spells: [],
-			place: 0,
-		}));
-        allies.push(makeAllyBasic({
-			name: "Muscle Sorceress",
-			hp: 11, 
-			mp: 20,
-			dmg: 5,
-			speed: 1.2,
-			spells: [magicMissile, firestorm, heal],
-			place: 1,
-		}));
-        allies.push(makeAllyBasic({
-			name: "Carl",
-			hp: 9,
-			mp: 20,
-			dmg: 5,
-			speed: 1.4,
-			spells: [],
-			place: 2,
-		}));
-        allies.push(makeAllyBasic({
-			name: "Dave",
-			hp: 11,
-			mp: 20,
-			dmg: 5,
-			speed: 1.4,
-			spells: [],
-			place: 3,
-		}));
+		// === ENEMY AI ==============================
+		
+		let enemyAct = function(enemy) {
+			let action = enemy.actions[Math.floor(Math.random()*enemy.actions.length)];
+			({
+				enemy: () => {
+					let t = allies[Math.floor(Math.random()*allies.length)];
+					while (t.hp <= 0) t = allies[Math.floor(Math.random()*allies.length)];
+					action.effect(enemy, t);
+				},
+				ally:  () => {
+					let t = enemies[Math.floor(Math.random()*enemies.length)];
+					while (t.hp <= 0) t = enemies[Math.floor(Math.random()*enemies.length)];
+					action.effect(enemy, t);
+				},
+				allEnemies:  () => {
+					for (let t of allies) {
+						action.effect(enemy, t);
+					}
+				},
+				allAllies:  () => {
+					for (let t of enemies) {
+						action.effect(enemy, t);
+					}
+				},
+			})[action.target]();
+		}
 		
 		// === ENEMIES ================================
 		
 		enemies.push(makeEnemyBasic({
-			name: "Foo",
-			hp: 3,
-			dmg: 2,
-			speed: 2.7,
-			spells: [],
+			name: "Wolf",
+			hp: 7,
+			dmg: 5,
+			speed: 1.2+(Math.PI/96),
+			actions: [basicAttack],
 			place: 0,
+			pictureName: "char/wolf.png",
 		}));
 		enemies.push(makeEnemyBasic({
-			name: "Barbarbarbar",
-			hp: 4,
-			dmg: 2,
-			speed: 2.5,
-			spells: [],
+			name: "Lobster",
+			hp: 8,
+			dmg: 4,
+			speed: 1.5+(Math.PI/95),
+			actions: [basicAttack],
 			place: 1,
+			pictureName: "char/lobster.png",
 		}));
 		enemies.push(makeEnemyBasic({
-			name: "Baz",
-			hp: 5,
-			dmg: 2,
-			speed: 2.2,
-			spells: [],
+			name: "Evil Tree",
+			hp: 7,
+			dmg: 6,
+			speed: 2.0+(Math.PI/94),
+			actions: [heal],
 			place: 2,
+			pictureName: "char/tree.png",
 		}));
 		
 		// === THE REST OF IT ==================================
@@ -424,11 +461,11 @@ const battle = modules.define('battle')
 				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, game.WIDTH-20, 22*(i+1));
 				
-				const {x, y, w, h} = e;
+				const {x, y} = e;
 				
 				// Draw sprite
-				ctx.fillStyle = "#f99";
-				ctx.fillRect(x, y, w, h);
+				if (e.hp > 0)
+					defs.image.drawImage(ctx, e.pictureName, x, y);
 				
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
@@ -535,22 +572,20 @@ const battle = modules.define('battle')
 				if (a.cd <= 0 && !enemiesDead()) {
 					initMenu(a); // TODO MAKE THIS NOT BAD
 					a.cd += a.speed*1000;
-					exit = false;
 				}
 			}
 		};
 
         var tickEnemies = function(elapsed) {
+			if (alliesDead()) {
+				game.ui = defeat_ui;
+				return;
+			}
             for (var i=0; i<enemies.length; i++) {
                 var e = enemies[i];
                 if (e.cd <= 0) {
                     if (!alliesDead()) {
-                        var t = allies[Math.floor(Math.random()*allies.length)];
-                        while (t.hp <= 0) t = allies[Math.floor(Math.random()*allies.length)];
-                        e.attack(t);
-                        if (t.hp <= 0) {
-                            t.die(true);
-                        }
+                        enemyAct(e);
                         e.cd += e.speed*1000;
                     }
                 }
@@ -577,9 +612,6 @@ const battle = modules.define('battle')
 				drawEnd(ctx, true);
 			},
             mouse_clicked: function({mx,my}) {
-				allies.map(function (x,i) {
-					game.party[i].curhp = x.hp;
-				});
 				
                 game.ui = map_ui;
 				audio.playMusic('dungeon');
@@ -587,7 +619,8 @@ const battle = modules.define('battle')
 		};
 		
 		var initMenu = function(active) {
-			buttons = [];
+			attackButton.selected = false;
+			spellsButton.selected = false;
 			spellButtons = [];
 			targetButtons = [];
 			
@@ -609,7 +642,10 @@ const battle = modules.define('battle')
 				drawEnd(ctx, false);
 			},
             mouse_clicked: function({mx,my}) {
-                game.ui = map_ui;
+                game.ui = defs.title.initUi();
+				for (let ally of allies) {
+					ally.hp = ally.maxhp;
+				}
 				audio.playMusic('dungeon');
 			},
 		};
@@ -617,15 +653,10 @@ const battle = modules.define('battle')
 		// MAIN MENU UI
 		var menu_ui = function(active) { return {
 			draw: function (ctx) {
-				if (!exit) {
-					drawStandard(ctx);
-					drawMenu(ctx, active);
-					drawSpellsMenu(ctx, active);
-					drawTargets(ctx, active);
-				}
-				else {
-					game.ui = ui;//returnToCombat();
-				}
+				drawStandard(ctx);
+				drawMenu(ctx, active);
+				drawSpellsMenu(ctx, active);
+				drawTargets(ctx, active);
 			},
             mouse_clicked: function({mx,my}) {
                 if (overButton(attackButton)) {
@@ -660,7 +691,7 @@ const battle = modules.define('battle')
 						let {active, allowed, activate} = targetButton;
 						if (allowed) {
 							activate();
-							exit = true;
+							returnToCombat();
 						}
 					}
 				}

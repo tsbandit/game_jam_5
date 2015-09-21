@@ -92,7 +92,7 @@ const map_screen = modules.define('map_screen')
 		const make_room = function(grid, x, y) {
 			// Legal types: 'mob', 'empty', 'stair_forward', 'stair_backward'
 
-			const type = (Math.random() < 0.3) ?  'mob' :  'empty';
+			const type = (Math.random() < 0.5) ?  'mob' :  'empty';
 
 			return {
 				type: type,
@@ -157,7 +157,7 @@ const map_screen = modules.define('map_screen')
 
 			util.dispatch(room, {
 				mob: () =>
-					draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red'),
+					image.drawImage(ctx, 'room/boss.png', sx, sy),
 				stair_forward: () =>
 					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
 				stair_backward: () =>

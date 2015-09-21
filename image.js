@@ -13,7 +13,11 @@ const image = modules.define('image')
 		'room/stairs_up.png',
 		'room/stairs_down.png',
 		'hello.png',
-		'nonexistant.png'
+		'char/wolf.png',
+		'char/lobster.png',
+		'char/tree.png',
+		'room/boss.png',
+		'nonexistant.png',
 	];
 		
 	loader.addFormat({

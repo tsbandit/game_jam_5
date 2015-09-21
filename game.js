@@ -2,31 +2,18 @@
 
 const game = modules.define('game')
 .import('util')
+.import('battle')
 .export(function (defs) {
 	const WIDTH  = 640;
 	const HEIGHT = 480;
-	
+
 	let ui = {};
-	
-	function PartyMember(name, hp, power, speed) {
-		this.name = name;
-		this.maxhp = hp;
-		this.curhp = hp;
-		this.power = power;
-		this.speed = speed;
-	}
-	const party = [];
-	party.push(new PartyMember("Bobette", 10, 5, 1.0));
-	party.push(new PartyMember("Muscle Sorceress", 8, 5, 1.3));
-	party.push(new PartyMember("Carl", 9, 5, 1.4));
-	party.push(new PartyMember("Dave", 11, 5, 1.4));
-	
+		
 	// Game
 	var exports = {
 		WIDTH,
 		HEIGHT,
 		ui,
-		party,
 		
 		canvas: null,
 		

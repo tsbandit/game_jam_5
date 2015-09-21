@@ -16,7 +16,7 @@ const title = modules.define('title')
 				ctx.font = "bold 24pt sans-serif";
 				ctx.fillStyle = "#000";
 				ctx.textAlign = "center";
-				ctx.fillText('TITLE GOES HERE', game.WIDTH/2, game.HEIGHT/5);
+				ctx.fillText('DUNGEON SQUARE', game.WIDTH/2, game.HEIGHT/5);
 			},
 			tick: function (elapsed) {
 				
