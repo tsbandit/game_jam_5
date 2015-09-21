@@ -1,15 +1,48 @@
 (function() {
    
 const map_screen = modules.define('map_screen')
+.import('audio')
 .import('game')
 .import('image')
 .import('battle')
+.import('party_screen')
 .import('util')
 .export(function (defs) {
     
+	function Button(name) {
+		this.name = name;
+		this.fill = '#fff';
+		
+		this.x = 0;
+		this.y = 0;
+		this.w = 160;
+		this.h = 30;
+	}
+	
+	Button.prototype.over = function (mx, my) {
+		return ((mx > this.x) && (mx < this.x+this.w) &&
+				(my > this.y) && (my < this.y+this.h));
+	};
+	
+	Button.prototype.draw = function (ctx) {
+		ctx.fillStyle	= this.fill;
+		ctx.fillRect(this.x, this.y, this.w, this.h);
+		ctx.font = "bold 18pt sans-serif";
+		ctx.fillStyle = "#000";
+		ctx.textAlign = "center";
+		ctx.fillText(this.name, this.x+(this.w/2), this.y+24);
+	};
+	
     const exports = {};
-	const {game,image,battle,util} = defs;
+	const {audio,game,image,battle,util,party_screen} = defs;
 	exports.initUi = function () {
+		audio.playMusic('dungeon');
+				
+		const party_button = new Button("Party");
+		party_button.x = 400;
+		party_button.y = 50;
+		party_button.fill = '#8cf';
+				
 		const draw_disc = function(ctx, x, y, r, c) {
 			ctx.fillStyle = c;
 
@@ -25,35 +58,39 @@ const map_screen = modules.define('map_screen')
 
 		let px = 0;
 		let py = 0;
-		const grid = [];
+		let pz = 0;
+		let tower;   // Initialized later
 
-		const valid_coord = function(rx, ry) {
+		const update_visibility = function() {
+			const room = tower(pz)[py][px];
+			room.visible = true;
+			for(let r of adjacents(room))
+				r.visible = true;
+		};
+
+		const valid_coord = function(rx, ry, grid) {
+			if(grid === undefined)
+				grid = tower(pz);
+
 			return ry >= 0
 			    && ry < grid.length
 			    && rx >= 0
 			    && rx < grid[ry].length;
 		};
 
-		const adjacents = function*({x,y}) {
-			if(valid_coord(x-1, y))
+		const adjacents = function*({grid,x,y}) {
+			if(valid_coord(x-1, y, grid))
 				yield grid[y][x-1];
-			if(valid_coord(x+1, y))
+			if(valid_coord(x+1, y, grid))
 				yield grid[y][x+1];
-			if(valid_coord(x, y-1))
+			if(valid_coord(x, y-1, grid))
 				yield grid[y-1][x];
-			if(valid_coord(x, y+1))
+			if(valid_coord(x, y+1, grid))
 				yield grid[y+1][x];
 		};
 
-		const update_visibility = function() {
-			const room = grid[py][px]
-			room.visible = true;
-			for(let r of adjacents(room))
-				r.visible = true;
-		}
-
-		const make_room = function(x, y) {
-			// Legal types: 'mob', 'empty', 'stair_forward'
+		const make_room = function(grid, x, y) {
+			// Legal types: 'mob', 'empty', 'stair_forward', 'stair_backward'
 
 			const type = (Math.random() < 0.3) ?  'mob' :  'empty';
 
@@ -62,24 +99,45 @@ const map_screen = modules.define('map_screen')
 				x: x,
 				y: y,
 				visible: false,
+				grid: grid,
 			};
 		};
 
-		// Generate the map
-		{
+		const generate_floor = function(z) {
+			const grid = [];
+
 			for(let i=0; i<4; ++i) {
 				grid.push([]);
 				for(let j=0; j<5; ++j)
-					grid[i].push(make_room(j, i));
+					grid[i].push(make_room(grid, j, i));
 			}
-			update_visibility();
 
-			grid[py][px].type = 'empty';
+			// Generate the staircase backward if necessary
+			if(z === 0) {
+				grid.stair_backward = grid[0][0];
+				grid[0][0].type = 'empty';
+			} else {
+				const x = tower(z-1).stair_forward.x;
+				const y = tower(z-1).stair_forward.y;
+				grid.stair_backward = grid[y][x];
+				grid.stair_backward.type = 'stair_backward';
+			}
 
-			const stair_y = Math.floor(grid.length * Math.random());
-			const stair_x = Math.floor(grid[stair_y].length * Math.random());
-			grid[stair_y][stair_x].type = 'stair_forward';
-		}
+			// Set some rooms to be visible
+			grid.stair_backward.visible = true;
+			for(let r of adjacents(grid.stair_backward))
+				r.visible = true;
+
+			// Generate the staircase forward
+			do {
+				const y = Math.floor(grid.length * Math.random());
+				const x = Math.floor(grid[y].length * Math.random());
+				grid.stair_forward = grid[y][x];
+			} while(grid.stair_forward === grid.stair_backward);
+			grid.stair_forward.type = 'stair_forward';
+
+			return grid;
+		};
 
 		const screen_coords = function(x, y) {
 			const sx = BASE_X+ROOM_W*x;
@@ -88,44 +146,74 @@ const map_screen = modules.define('map_screen')
 		};
 
 		const draw_room = function(ctx, x, y) {
-			const room = grid[y][x];
+			const room = tower(pz)[y][x];
 
 			if(!room.visible)
 				return;
 
 			const [sx, sy] = screen_coords(x, y);
 
-			image.drawImage(ctx, 'Game Jam Rooms/Solid Room.png', sx, sy);
+			image.drawImage(ctx, 'room/room.png', sx, sy);
 
 			util.dispatch(room, {
 				mob: () =>
 					draw_disc(ctx, sx+ROOM_W/4, sy+ROOM_H/4, 8, 'red'),
 				stair_forward: () =>
-					image.drawImage(ctx, 'Game Jam Items/Stairs Acending stairs.png', sx, sy),
+					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
+				stair_backward: () =>
+					image.drawImage(ctx, 'room/stairs_down.png', sx, sy),
 			});
+		};
+
+		const tower_cache = [];
+		tower = function(z) {
+			if(tower_cache[z] === undefined)
+				tower_cache[z] = generate_floor(z);
+
+			return tower_cache[z];
 		};
 
 		const ui = {
 			draw: function (ctx) {
+				const grid = tower(pz);
+
 				for(let i=0; i<grid.length; ++i)
 					for(let j=0; j<grid[i].length; ++j)
 						draw_room(ctx, j, i);
 
 				// Draw player
 				const [sx, sy] = screen_coords(px, py);
-				image.drawImage(ctx, 'Game Jam Art/Blue Hair Sprite finish.png', sx, sy);
+				image.drawImage(ctx, 'char/hero.png', sx, sy);
+
+				// Display current floor number
+				ctx.fillStyle = 'black';
+				ctx.font = 'bold 24px sans-serif';
+				ctx.textAlign = 'left';
+				ctx.fillText(pz, 40, 40);
+				
+				// Draw ui
+				party_button.draw(ctx);
 			},
 			tick: function (elapsed) {
 				
 			},
+			mouse_moved: function({mx,my}) {
+				if (party_button.over(mx,my)) { 
+					party_button.fill = '#00f';
+				} else {
+					party_button.fill = '#99f';
+				}
+			},
 			mouse_clicked: function({mx,my}) {
+				if (party_button.over(mx,my)) { return game.ui = party_screen.initUi(ui); }
+				
 				const rx = Math.floor((mx-BASE_X)/ROOM_W);
 				const ry = Math.floor((my-BASE_Y)/ROOM_H);
 
 				if(!valid_coord(rx,ry))
 					return;
 
-				const room = grid[ry][rx];
+				const room = tower(pz)[ry][rx];
 
 				if(!room.visible)
 					return;
@@ -134,13 +222,18 @@ const map_screen = modules.define('map_screen')
 				py = ry;
 				update_visibility();
 
-				if(room.type === 'mob') {
-					const todo = x => console.log('TODO: '+x);
-					todo("Maybe don't remove the mob until AFTER battle???");
-					room.type = 'empty';
+				util.dispatch(room, {
+					mob: () => {
+						const todo = x => console.log('TODO: '+x);
+						todo("Maybe don't remove the mob until AFTER battle?");
+						room.type = 'empty';
 
-					return game.ui = battle.initUi(ui);
-				}
+						return game.ui = battle.initUi(ui);
+					},
+					stair_forward: () => {
+						pz++;
+					},
+				});
 			},
 		};
 

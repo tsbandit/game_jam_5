@@ -1,184 +1,199 @@
 (function() {
 
-const audio = modules.define('audio', function (defs) {
+const audio = modules.define('audio')
+.import('loader')
+.export(function (defs) {
 	
-	let soundCache = {};
+	const {loader} = defs;
+	
 	const soundList = [
 		// TODO: Add more audio files to this list.
 		'hello.wav',
 		'nonexistant.wav'
 	];
 	
-	// Sounds
-	let exports = {
-		
-		MUTE: false,
-		
-		playSound(filename) {
-			if (audio.MUTE) { return; }
-			if(!soundCache.hasOwnProperty(filename)) {
-				// Auto-load new sounds on request
-				let sound = new Audio();
-				let cacheLine = {sound, ready: false};
-				
-				sound.addEventListener("canplaythrough", function() {
-					cacheLine.ready = true;
-					sound.play();
-				}, true);
-				soundCache[filename] = cacheLine;
-				sound.src = filename;
-			} else {
-				// Play sounds that already exist in the cache
-				if(soundCache[filename].ready && !soundCache[filename].error)
-					soundCache[filename].sound.play();
-			}
+	
+	// ----- Sounds -----
+	loader.addFormat({
+		type: 'sound', 
+		constructor: Audio, 
+		load: function (resource, filename, cb) {
+			resource.addEventListener('canplaythrough', cb, false);
+			resource.addEventListener('error', cb, false);
+			resource.src = filename;
 		},
-		
-		loadSounds(cb) {
-			var numLoadedsounds = 0, i, snd, cacheLine;
-			
-			function updateCache(line) { return function (ev) {
-				if (ev.type === 'error') {
-					line.error = true;
-					console.log('sound not loaded: '+ev.target.src);
-				} else {
-					line.ready = true;
-				}
-				
-				++numLoadedsounds;
-				if(numLoadedsounds == soundList.length) {
-					console.log('finished loading sounds');
-					cb();
-				}
-			}; }
-			
-			for(i = 0;  i < soundList.length;  ++i) {
-				snd = new Audio();
-				cacheLine = {sound: snd, ready: false, error: false};
-				soundCache[soundList[i]] = cacheLine;
-				// Call the callback after all images are loaded
-				snd.addEventListener("canplaythrough", updateCache(cacheLine),false);
-				// Skip this sound if it failed to load
-				snd.addEventListener("error", updateCache(cacheLine),false);
-				snd.src = soundList[i];
-			}
-		}
-		
+		extensions: ['wav'], 
+		fallback: 'hello.wav'
+	});	
+	
+	let exports = {
+		MUTE:			false,
+		musicPlaying:	false
 	};
 	
-	// Music is way more complicated
+	exports.playSound = function (filename) {
+		if (audio.MUTE) { return; }
+		loader.get(filename).play();
+	};
+		
+	exports.loadSounds = function (cb) {
+		loader.load(soundList).then(cb);
+	};
+		
+	// ----- Music -----
+	const musicList = [
+		{ name: 'battle', intro: 'music/battle_intro.ogg', loop: 'music/battle_loop.ogg' },
+		{ name: 'dungeon', intro: 'music/dungeon_intro.ogg', loop: 'music/dungeon_loop.ogg' },
+		{ name: 'lost', intro: 'music/lost.ogg' }
+	];
+	const songs = {};
+	
+	// Check for HTML Audio API support
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 	if(!AudioContext) {
-		exports.loadMusic		= function() {};
+		exports.loadMusic	= function() {};
 		exports.resumeMusic	= function() {};
-		exports.stopMusic		= function() {};
-
+		exports.stopMusic	= function() {};
+		
 		return;  // EXIT THIS ENTIRE SCOPE
 	}
+	
+	// Create an audio context for music
+	const audioContext = new AudioContext();
+	
+	// Add the "music" format to the loader
+	loader.addFormat({
+		type: 'music', 
+		constructor: function () {
+			return {
+				buffer:		null,
+				gain:		null,
+				request:	new XMLHttpRequest()
+			};
+		},		
+		load: function (resource, filename, cb) {
+			resource.request.open('GET', filename, true);
+			resource.request.responseType = 'arraybuffer';
 
-	var context = new AudioContext();
-
-	var loadSound = function(url, callback) {
-		var request = new XMLHttpRequest();
-		request.open('GET', url, true);
-		request.responseType = 'arraybuffer';
-
-		// Decode asynchronously
-		request.onload = function() {
-			context.decodeAudioData(request.response, callback,
-				function() {console.log('Error loading sound');});
-		}
-		try {
-			request.send();
-		} catch(unused) {
-		}
-	}
-	var playSound = function(b, time, loop, pos) {
-		var source = context.createBufferSource();
-		b.source = source;
-		source.buffer = b.buffer;
+			// Error state callback
+			function sendError() { cb({type:'error', target: {src:filename}}); };
+			
+			// Decode asynchronously
+			resource.request.onload = function () {
+				audioContext.decodeAudioData(
+					resource.request.response,
+					musicOnDecode(resource,cb),
+					sendError
+				);
+			};
+						
+			try { resource.request.send(); } 
+			catch(unused) { sendError(); }
+		},
+		extensions: ['mp3','ogg'], 
+		fallback: null
+	});
+	
+	// Save buffer data from decoded music clip
+	function musicOnDecode(clip, cb) { return function (buffer) {
+		// This is Tommy's code
+		clip.buffer	= buffer;
+		clip.gain	= audioContext.createGain();
+		clip.gain.connect(audioContext.destination);
+		cb({});
+	}; }
+	
+	// Play a music clip
+	function playClip(clip, delay, loop, pos) {
+		// This is Tommy's code
+		var source = audioContext.createBufferSource();
+		clip.source = source;
+		source.buffer = clip.buffer;
 		source.loop = loop;
-		source.connect(b.gain);
-		source.start(context.currentTime + time, pos);
-		b.startTime = context.currentTime + time - pos;
+		source.connect(clip.gain);
+		source.start(audioContext.currentTime + delay, pos);
+		clip.startTime = audioContext.currentTime + delay - pos;
 	}
-
-	var intro = {};
-	var loop = {};
-	var pos = 0;
-
-	var n = 2;
-	var musicShouldBePlaying = false;
-	var musicLoaded = function() {return n === 0;}
-	var cb = function() {
-		var introLength;
-		if(--n > 0)
-			return;
-
-		if(musicShouldBePlaying)
-			doResumeMusic();
-	};
-	var callback = function(b) {return function(buffer) {
-		b.buffer = buffer;
-		b.gain = context.createGain();
-		b.gain.connect(context.destination);
-		cb();
-	};};
-
-	exports.loadMusic = function() {
-		loadSound('intro.mp3', callback(intro));
-		loadSound('loop.mp3', callback(loop));
-	};
-	exports.stopMusic = function() {
-		if(!musicShouldBePlaying) {
-			console.log('stopMusic() called when music already stopped!');
-			return;
+	// Stop a music clip & disconnect audio source
+	function stopClip(clip) {
+		if (clip.source) {
+			clip.source.stop(0);
+			clip.source.disconnect();
 		}
-
-		musicShouldBePlaying = false;
-
-		if(musicLoaded())
-			doStopMusic();
-	};
-
-	var doStopMusic = function() {
-		var introLength = intro.buffer.duration;
-		var loopLength = loop.buffer.duration;
-
-		if(intro.source) {
-			intro.source.stop(0);
-			intro.source.disconnect();
+	}
+	
+	// ----- Song object -----
+	function Song(intro, loop) {
+		this.introClip = loader.get(intro);
+		if (this.introClip !== null) {
+			this.introLength = this.introClip.buffer.duration;
 		}
-		loop.source.stop(0);
-		loop.source.disconnect();
-
-		pos = (context.currentTime - intro.startTime);
-		if(pos >= intro.buffer.duration) {
-			pos = context.currentTime + introLength - loop.startTime;
-			while(pos >= introLength + loopLength)
-				pos -= loopLength;
+		
+		this.loopClip = loader.get(loop);
+		if (this.loopClip !== null) {
+			this.loopLength = this.loopClip.buffer.duration;
 		}
-	};
-	exports.resumeMusic = function() {
-		if(musicShouldBePlaying) {
-			console.log('resumeMusic() called when music already playing!');
-			return;
-		}
-
-		musicShouldBePlaying = true;
-
-		if(musicLoaded())
-			doResumeMusic();
-	};
-
-	var doResumeMusic = function() {
-		var introLength = intro.buffer.duration;
-		if(pos < introLength) {
-			playSound(intro, 0, false, pos);
-			playSound(loop, introLength - pos, true, 0);
+		
+		this.pos = 0;
+	}
+	// Play song
+	Song.prototype.play = function (pos) {
+		if (pos !== undefined) { this.pos = pos; }
+		
+		if (this.pos < this.introLength) {
+			const D = 0.1;  // A small delay; helps eliminate seams
+			playClip(this.introClip, D, false, this.pos);
+			playClip(this.loopClip, D + this.introLength - this.pos, true, 0);
 		} else {
-			playSound(loop, 0, true, pos - introLength);
+			playClip(this.loopClip, 0, true, this.pos - this.introLength);
 		}
+	};
+	// Pause song
+	Song.prototype.pause = function () {
+		stopClip(this.introClip);
+		stopClip(this.loopClip);
+		
+		this.pos = audioContext.currentTime - this.introClip.startTime;
+		if (this.pos >= this.introLength) {
+			this.pos = audioContext.currentTime + this.introLength - this.loopClip.startTime;
+			while (this.pos >= this.introLength + this.loopLength)
+				this.pos -= this.loopLength;
+		}
+	};
+	// Stop song & reset to beginning
+	Song.prototype.stop = function () {
+		this.pause();
+		this.pos = 0;
+	};
+	
+	exports.loadMusic = function (cb) {
+		var clips = Array.prototype.concat.apply([], musicList.map(function (x) {
+			var subclips = [];
+			if (x.intro !== undefined) subclips.push(x.intro);
+			if (x.loop !== undefined) subclips.push(x.loop);
+			return subclips;
+		}));
+		
+		loader.load(clips).then(function () {
+			musicList.map(function (x) {
+				var song = new Song(x.intro, x.loop);
+				songs[x.name] = song;
+			});
+			
+			cb();
+		});
+	};
+	
+	exports.playMusic = function (song) {
+		if (audio.MUTE) { return; }
+		if (audio.currentSong !== song) {
+			var lastSong = songs[audio.currentSong];
+			if (lastSong) { lastSong.stop(); }
+			audio.currentSong = song;
+			songs[song].play(0);
+		} else if (!audio.musicPlaying) {
+			songs[song].play();
+		}		
 	};
 	
 	return exports;

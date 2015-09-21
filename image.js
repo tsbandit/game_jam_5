@@ -1,31 +1,50 @@
 (function() {
 
-const image = modules.define('image', function (defs) {
+const image = modules.define('image')
+.import('loader')
+.export(function (defs) {
+	
+	const {loader} = defs;
 	
 	let imageCache = {};
 	const imageList = [
-		'Game Jam Rooms/Solid Room.png',
-		'Game Jam Art/Blue Hair Sprite finish.png',
-		'Game Jam Items/Stairs Acending stairs.png',
+		'room/room.png',
+		'char/hero.png',
+		'room/stairs_up.png',
+		'room/stairs_down.png',
 		'hello.png',
 		'nonexistant.png'
 	];
+		
+	loader.addFormat({
+		type: 'image', 
+		constructor: Image, 
+		load: function (resource, filename, cb) {
+			resource.addEventListener('load', cb, false);
+			resource.addEventListener('error', cb, false);
+			resource.src = filename;
+		},
+		extensions: ['png','jpg','gif','bmp'], 
+		fallback: 'hello.png'
+	});
 		
 	let exports = {
 		
 		drawImage(ctx, filename) {
 			let imageArgs = Array.prototype.slice.call(arguments,2);
-			let cachedImage = imageCache[filename];
+			let cachedImage = loader.get(filename);
 				
 			// Obvious, but not crash-y, indication that image is not in cache
-			if (cachedImage === undefined) { cachedImage = imageCache['hello.png']; }
+			//if (cachedImage === undefined) { cachedImage = imageCache['hello.png']; }
 			
 			imageArgs.unshift(cachedImage);
 			ctx.drawImage.apply(ctx,imageArgs);
 		},
 		
 		loadImages(cb) {
-			var numLoadedImages = 0, i, img;
+			loader.load(imageList).then(cb);
+			
+			/*var numLoadedImages = 0, i, img;
 			
 			function updateCache(ev) {
 				if (ev.type === 'error') {
@@ -48,7 +67,7 @@ const image = modules.define('image', function (defs) {
 				img.onload = updateCache;
 				img.onerror = updateCache;
 				img.src = imageList[i];
-			}
+			}*/
 		}
 		
 	};

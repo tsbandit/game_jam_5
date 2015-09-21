@@ -1,6 +1,7 @@
 (function() {
 
 const battle = modules.define('battle')
+.import('audio')
 .import('game')
 .import('map_screen')
 .import('image')
@@ -9,6 +10,7 @@ const battle = modules.define('battle')
     var game = defs.game;
 	var mxg = 0;
 	var myg = 0;
+    const {audio, game} = defs;
     
 	var module = {};
     
@@ -41,8 +43,8 @@ const battle = modules.define('battle')
 	var exit = false;
 	
 	module.initUi = function (map_ui) {
-		
-		// === SETUP ============================================
+
+		audio.playMusic('battle');
 		
 		allies = [];
 		enemies = [];
@@ -398,7 +400,7 @@ const battle = modules.define('battle')
 				const {x, y} = a;
 
 				// Draw sprite
-				defs.image.drawImage(ctx, 'Game Jam Art/Blue Hair Sprite finish.png', x, y);
+				defs.image.drawImage(ctx, 'char/hero.png', x, y);
 
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
@@ -573,7 +575,12 @@ const battle = modules.define('battle')
 				drawEnd(ctx, true);
 			},
             mouse_clicked: function({mx,my}) {
+				allies.map(function (x,i) {
+					game.party[i].curhp = x.hp;
+				});
+				
                 game.ui = map_ui;
+				audio.playMusic('dungeon');
 			},
 		};
 		
@@ -602,6 +609,7 @@ const battle = modules.define('battle')
 			},
             mouse_clicked: function({mx,my}) {
                 game.ui = map_ui;
+				audio.playMusic('dungeon');
 			},
 		};
 		

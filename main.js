@@ -30,7 +30,9 @@ util.run_async(function*(resume) {
 	yield;
 	audio.loadSounds(resume);
 	yield;
-	
+	audio.loadMusic(resume);
+	yield;
+		
 	game.ui = title.initUi();
 // END OF MAIN THREAD
 ////////////////////////////////////////////////////////////////////////
