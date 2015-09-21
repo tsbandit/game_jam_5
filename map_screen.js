@@ -5,13 +5,43 @@ const map_screen = modules.define('map_screen')
 .import('game')
 .import('image')
 .import('battle')
+.import('party_screen')
 .import('util')
 .export(function (defs) {
     
+	function Button(name) {
+		this.name = name;
+		this.fill = '#fff';
+		
+		this.x = 0;
+		this.y = 0;
+		this.w = 160;
+		this.h = 30;
+	}
+	
+	Button.prototype.over = function (mx, my) {
+		return ((mx > this.x) && (mx < this.x+this.w) &&
+				(my > this.y) && (my < this.y+this.h));
+	};
+	
+	Button.prototype.draw = function (ctx) {
+		ctx.fillStyle	= this.fill;
+		ctx.fillRect(this.x, this.y, this.w, this.h);
+		ctx.font = "bold 18pt sans-serif";
+		ctx.fillStyle = "#000";
+		ctx.textAlign = "center";
+		ctx.fillText(this.name, this.x+(this.w/2), this.y+24);
+	};
+	
     const exports = {};
-	const {audio,game,image,battle,util} = defs;
+	const {audio,game,image,battle,util,party_screen} = defs;
 	exports.initUi = function () {
 		audio.playMusic('dungeon');
+				
+		const party_button = new Button("Party");
+		party_button.x = 400;
+		party_button.y = 50;
+		party_button.fill = '#8cf';
 				
 		const draw_disc = function(ctx, x, y, r, c) {
 			ctx.fillStyle = c;
@@ -117,11 +147,23 @@ const map_screen = modules.define('map_screen')
 				// Draw player
 				const [sx, sy] = screen_coords(px, py);
 				image.drawImage(ctx, 'char/hero.png', sx, sy);
+				
+				// Draw ui
+				party_button.draw(ctx);
 			},
 			tick: function (elapsed) {
 				
 			},
+			mouse_moved: function({mx,my}) {
+				if (party_button.over(mx,my)) { 
+					party_button.fill = '#00f';
+				} else {
+					party_button.fill = '#99f';
+				}
+			},
 			mouse_clicked: function({mx,my}) {
+				if (party_button.over(mx,my)) { return game.ui = party_screen.initUi(ui); }
+				
 				const rx = Math.floor((mx-BASE_X)/ROOM_W);
 				const ry = Math.floor((my-BASE_Y)/ROOM_H);
 
