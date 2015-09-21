@@ -10,22 +10,6 @@ const battle = modules.define('battle')
 	// Battle screen
     var game = defs.game;
 
-	/*
-	
-	{
-		let uis = game.ui;
-		game.ui = undefined;
-		Object.defineProperty(game, 'ui', {
-			get: function() {
-//				if(false)
-//					debugger;
-				return uis;
-			},
-			set: function(x) {return uis = Object.freeze(x);},
-		});
-	}
-	*/
-
 	var mxg = 0;
 	var myg = 0;
     const {audio,util} = defs;
@@ -549,9 +533,6 @@ const battle = modules.define('battle')
 			for (var i=0; i<allies.length; i++) {
 				var a = allies[i];
 				if (a.cd <= 0 && !enemiesDead()) {
-					
-					// Menu UI
-//					active = a;
 					initMenu(a); // TODO MAKE THIS NOT BAD
 					a.cd += a.speed*1000;
 					exit = false;
@@ -620,7 +601,6 @@ const battle = modules.define('battle')
 		
 		var returnToCombat = function() {
 			game.ui = ui;
-//			debugger;
 		};
 		
 		var defeat_ui = {
@@ -644,13 +624,7 @@ const battle = modules.define('battle')
 					drawTargets(ctx, active);
 				}
 				else {
-					console.log("GAME.UI:");
-					console.log(game.ui);
-					console.log("UI:");
-					console.log(ui);
 					game.ui = ui;//returnToCombat();
-					console.log("GAME.UI POST:");
-					console.log(game.ui);
 				}
 			},
             mouse_clicked: function({mx,my}) {
@@ -690,24 +664,15 @@ const battle = modules.define('battle')
 						}
 					}
 				}
-				//if (exit) returnToCombat();
 			},
 			mouse_moved: function({mx,my}) {
 				mxg = mx;
 				myg = my;
-				
-				game.ui.hello = 3;
-/*
-				util.assert(Object.isFrozen(game.ui));
-				util.assert(game.ui.hello === 3);
-				util.assert(false);
-*/
 			},
 		};};
         
-		var ui = Object.freeze({
+		var ui = {
 			draw: function (ctx) {
-				console.log('foo'+ Math.random());
 				drawStandard(ctx);
 			},
 			tick: function (elapsed) {
@@ -715,7 +680,7 @@ const battle = modules.define('battle')
 				tickAllies(elapsed);
 				tickEnemies(elapsed);
 			},
-		});
+		};
 		return ui;
 	};
 	
