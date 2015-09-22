@@ -22,7 +22,7 @@ const title = modules.define('title')
 				
 			},
 			mouse_clicked: function(ev) {
-				audio.playSound('hello.wav');
+				//audio.playSound('hello.wav');
 				game.ui = map_screen.initUi();
 			},
 		}
