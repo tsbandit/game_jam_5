@@ -186,6 +186,7 @@ const audio = modules.define('audio')
 	
 	exports.playMusic = function (song) {
 		if (audio.MUTE) { return; }
+
 		if (audio.currentSong !== song) {
 			var lastSong = songs[audio.currentSong];
 			if (lastSong) { lastSong.stop(); }
@@ -193,7 +194,9 @@ const audio = modules.define('audio')
 			songs[song].play(0);
 		} else if (!audio.musicPlaying) {
 			songs[song].play();
-		}		
+		}
+
+		audio.musicPlaying = true;
 	};
 	
 	return exports;
