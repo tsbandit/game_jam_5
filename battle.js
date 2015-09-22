@@ -152,6 +152,7 @@ const battle = modules.define('battle')
 	module.allies = allies;
 
 	module.initUi = function (map_ui, floor_number) {
+		mxg = myg = 0;
 
 		audio.playMusic('battle');
 		
@@ -737,6 +738,10 @@ const battle = modules.define('battle')
 				tickCooldowns(elapsed);
 				tickAllies(elapsed);
 				tickEnemies(elapsed);
+			},
+			mouse_moved: function({mx,my}) {
+				mxg = mx;
+				myg = my;
 			},
 		};
 		return ui;
