@@ -74,46 +74,52 @@ const battle = modules.define('battle')
 		w: ALLY_W,
 		h: ALLY_H,
 		cd: speed*1000,
+		exp: 0,
 	};};
 	
 	const allies = [];
-	
-	allies.push(makeAllyBasic({
-		name: "Bobette",
-		hp: 8,
-		mp: 20,
-		dmg: 3,
-		speed: 1.0+(Math.PI/100),
-		spells: [],
-		place: 0,
-	}));
-	allies.push(makeAllyBasic({
-		name: "Muscle Sorceress",
-		hp: 11, 
-		mp: 20,
-		dmg: 2,
-		speed: 1.1+(Math.PI/99),
-		spells: [magicMissile, firestorm, heal],
-		place: 1,
-	}));
-	allies.push(makeAllyBasic({
-		name: "Carl",
-		hp: 9,
-		mp: 20,
-		dmg: 3,
-		speed: 1.2+(Math.PI/98),
-		spells: [],
-		place: 2,
-	}));
-	allies.push(makeAllyBasic({
-		name: "Dave",
-		hp: 11,
-		mp: 20,
-		dmg: 4,
-		speed: 1.3+(Math.PI/97),
-		spells: [],
-		place: 3,
-	}));
+
+	const module = {};
+	module.initialize_allies = function() {
+		allies.length = 0;
+
+		allies.push(makeAllyBasic({
+			name: "Bobette",
+			hp: 8,
+			mp: 20,
+			dmg: 3,
+			speed: 1.0+(Math.PI/100),
+			spells: [],
+			place: 0,
+		}));
+		allies.push(makeAllyBasic({
+			name: "Muscle Sorceress",
+			hp: 11, 
+			mp: 20,
+			dmg: 2,
+			speed: 1.1+(Math.PI/99),
+			spells: [magicMissile, firestorm, heal],
+			place: 1,
+		}));
+		allies.push(makeAllyBasic({
+			name: "Carl",
+			hp: 9,
+			mp: 20,
+			dmg: 3,
+			speed: 1.2+(Math.PI/98),
+			spells: [],
+			place: 2,
+		}));
+		allies.push(makeAllyBasic({
+			name: "Dave",
+			hp: 11,
+			mp: 20,
+			dmg: 4,
+			speed: 1.3+(Math.PI/97),
+			spells: [],
+			place: 3,
+		}));
+	};
 	
 	var mxg = 0;
 	var myg = 0;
@@ -143,12 +149,9 @@ const battle = modules.define('battle')
         this.hp = 0;
     }
 
-	var module = {
-		allies,
-	};
+	module.allies = allies;
 
-	
-	module.initUi = function (map_ui) {
+	module.initUi = function (map_ui, floor_number) {
 
 		audio.playMusic('battle');
 		
@@ -369,34 +372,37 @@ const battle = modules.define('battle')
 		}
 		
 		// === ENEMIES ================================
-		
-		enemies.push(makeEnemyBasic({
-			name: "Wolf",
-			hp: 7,
-			dmg: 5,
-			speed: 1.2+(Math.PI/96),
-			actions: [basicAttack],
-			place: 0,
-			pictureName: "char/wolf.png",
-		}));
-		enemies.push(makeEnemyBasic({
-			name: "Lobster",
-			hp: 8,
-			dmg: 4,
-			speed: 1.5+(Math.PI/95),
-			actions: [basicAttack],
-			place: 1,
-			pictureName: "char/lobster.png",
-		}));
-		enemies.push(makeEnemyBasic({
-			name: "Evil Tree",
-			hp: 7,
-			dmg: 6,
-			speed: 2.0+(Math.PI/94),
-			actions: [heal],
-			place: 2,
-			pictureName: "char/tree.png",
-		}));
+		{
+			const m = floor_number;  // bonus stats modifier
+
+			enemies.push(makeEnemyBasic({
+				name: "Wolf",
+				hp: 7+m*2,
+				dmg: 5+m,
+				speed: 1.2+(Math.PI/96),
+				actions: [basicAttack],
+				place: 0,
+				pictureName: "char/wolf.png",
+			}));
+			enemies.push(makeEnemyBasic({
+				name: "Lobster",
+				hp: 8+m*2,
+				dmg: 4+m,
+				speed: 1.5+(Math.PI/95),
+				actions: [basicAttack],
+				place: 1,
+				pictureName: "char/lobster.png",
+			}));
+			enemies.push(makeEnemyBasic({
+				name: "Evil Tree",
+				hp: 7+m*2,
+				dmg: 6+m,
+				speed: 2.0+(Math.PI/94),
+				actions: [heal],
+				place: 2,
+				pictureName: "char/tree.png",
+			}));
+		}
 		
 		// === THE REST OF IT ==================================
 		
@@ -612,12 +618,43 @@ const battle = modules.define('battle')
 				drawEnd(ctx, true);
 			},
             mouse_clicked: function({mx,my}) {
-				
+				// Level-up
+				for(let a of allies) {
+					// TODO: What if the ally is dead?
+
+					const bonus_hp_0 = Math.floor(Math.sqrt(a.exp) + a.maxhp);
+					const base_hp    = a.maxhp - bonus_hp_0;
+					let   bonus_d_0  = Math.floor(Math.sqrt(a.exp)/2 + 3);
+					const base_d     = a.dmg - bonus_d_0;
+
+					a.exp += floor_number+1;
+					
+					const bonus_hp_1 = Math.floor(Math.sqrt(a.exp) + a.maxhp);
+					const bonus_d_1  = Math.floor(Math.sqrt(a.exp)/2 + 3);
+					const healing = bonus_hp_1 - bonus_hp_0;
+					a.hp += healing;
+					a.maxhp = base_hp + bonus_hp_1;
+					a.dmg = base_d + bonus_d_1;
+				}
+
                 game.ui = map_ui;
 				audio.playMusic('dungeon');
 			},
 		};
-		
+
+		const on_attack_button_clicked = function(active) {
+			spellsButton.selected = false;
+			for (let b of spellButtons) {
+				b.enabled = false;
+				b.selected = false;
+			}
+			attackButton.selected = !attackButton.selected;
+			if (attackButton.selected) {
+				makeTargetButtons(enemies, basicAttack, active);
+			}
+			else targetButtons = [];
+		};
+
 		var initMenu = function(active) {
 			attackButton.selected = false;
 			spellsButton.selected = false;
@@ -629,7 +666,9 @@ const battle = modules.define('battle')
 				spellButtons[i].allowed = (active.mp >= active.spells[i].cost);
 			}
 			spellsButton.allowed = active.spells.length > 0;
+
 			game.ui = menu_ui(active);
+			on_attack_button_clicked(active);  // Such a hack
 		};
 		
 		var returnToCombat = function() {
@@ -643,13 +682,10 @@ const battle = modules.define('battle')
 			},
             mouse_clicked: function({mx,my}) {
                 game.ui = defs.title.initUi();
-				for (let ally of allies) {
-					ally.hp = ally.maxhp;
-				}
 				audio.playMusic('dungeon');
 			},
 		};
-		
+
 		// MAIN MENU UI
 		var menu_ui = function(active) { return {
 			draw: function (ctx) {
@@ -660,16 +696,7 @@ const battle = modules.define('battle')
 			},
             mouse_clicked: function({mx,my}) {
                 if (overButton(attackButton)) {
-					spellsButton.selected = false;
-					for (let b of spellButtons) {
-						b.enabled = false;
-						b.selected = false;
-					}
-					attackButton.selected = !attackButton.selected;
-					if (attackButton.selected) {
-						makeTargetButtons(enemies, basicAttack, active);
-					}
-					else targetButtons = [];
+					on_attack_button_clicked(active);
 				}
 				if (overButton(spellsButton)) {
 					attackButton.selected = false;

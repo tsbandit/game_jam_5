@@ -31,7 +31,7 @@ const party_screen = modules.define('party_screen')
 			ctx.fillStyle = "#000";
 			ctx.fillText(m.hp + ' / ' + m.maxhp, x + statOffset + statValueOffset, y);
 			ctx.fillText(m.dmg, x + statOffset + statValueOffset, y + statLineHeight);
-			ctx.fillText(m.speed, x + statOffset + statValueOffset, y + statLineHeight * 2);
+			ctx.fillText(m.speed.toFixed(1), x + statOffset + statValueOffset, y + statLineHeight * 2);
 		}
 			
 		const ui = {

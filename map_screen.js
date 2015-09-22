@@ -36,6 +36,8 @@ const map_screen = modules.define('map_screen')
     const exports = {};
 	const {audio,game,image,battle,util,party_screen} = defs;
 	exports.initUi = function () {
+		battle.initialize_allies();
+
 		audio.playMusic('dungeon');
 				
 		const party_button = new Button("Party");
@@ -90,9 +92,18 @@ const map_screen = modules.define('map_screen')
 		};
 
 		const make_room = function(grid, x, y) {
-			// Legal types: 'mob', 'empty', 'stair_forward', 'stair_backward'
+			// Legal types:
+			//   'mob', 'empty', 'stair_forward', 'stair_backward', 'fountain'
 
-			const type = (Math.random() < 0.5) ?  'mob' :  'empty';
+			// Choose type randomly
+			const rand = Math.random();
+			let type;
+			if(rand < 0.5)
+				type = 'mob';
+			else if(rand < 0.55)
+				type = 'fountain';
+			else
+				type = 'empty';
 
 			return {
 				type: type,
@@ -162,6 +173,8 @@ const map_screen = modules.define('map_screen')
 					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
 				stair_backward: () =>
 					image.drawImage(ctx, 'room/stairs_down.png', sx, sy),
+				fountain: () =>
+					image.drawImage(ctx, 'room/fountain.png', sx, sy),
 			});
 		};
 
@@ -228,10 +241,18 @@ const map_screen = modules.define('map_screen')
 						todo("Maybe don't remove the mob until AFTER battle?");
 						room.type = 'empty';
 
-						return game.ui = battle.initUi(ui);
+						return game.ui = battle.initUi(ui, pz);
 					},
 					stair_forward: () => {
-						pz++;
+						++pz;
+					},
+					stair_backward: () => {
+						--pz;
+					},
+					fountain: () => {
+						room.type = 'empty';
+						for(a of battle.allies)
+							a.hp = a.maxhp;
 					},
 				});
 			},
