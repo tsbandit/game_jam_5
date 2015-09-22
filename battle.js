@@ -378,7 +378,7 @@ const battle = modules.define('battle')
 
 			enemies.push(makeEnemyBasic({
 				name: "Wolf",
-				hp: 7+m*2,
+				hp: 7+m*3,
 				dmg: 5+m,
 				speed: 1.2+(Math.PI/96),
 				actions: [basicAttack],
