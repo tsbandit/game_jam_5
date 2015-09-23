@@ -60,7 +60,7 @@ const battle = modules.define('battle')
 	const ALLY_X = 40;
 	const ALLY_Y = 120;
 
-	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place}) { return {
+	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place, img}) { return {
 		name: name,
 		hp: hp,
 		maxhp: hp,
@@ -74,6 +74,7 @@ const battle = modules.define('battle')
 		h: ALLY_H,
 		cd: speed*1000,
 		exp: 0,
+		img: img,
 	};};
 	
 	const allies = [];
@@ -90,6 +91,7 @@ const battle = modules.define('battle')
 			speed: 1.0+(Math.PI/100),
 			spells: [],
 			place: 0,
+			img: 'char/hero0.png',
 		}));
 		allies.push(makeAllyBasic({
 			name: "Muscle Sorceress",
@@ -99,6 +101,7 @@ const battle = modules.define('battle')
 			speed: 1.1+(Math.PI/99),
 			spells: [magicMissile, firestorm, heal],
 			place: 1,
+			img: 'char/hero1.png',
 		}));
 		allies.push(makeAllyBasic({
 			name: "Carl",
@@ -108,6 +111,7 @@ const battle = modules.define('battle')
 			speed: 1.2+(Math.PI/98),
 			spells: [],
 			place: 2,
+			img: 'char/hero2.png',
 		}));
 		allies.push(makeAllyBasic({
 			name: "Dave",
@@ -117,6 +121,7 @@ const battle = modules.define('battle')
 			speed: 1.3+(Math.PI/97),
 			spells: [],
 			place: 3,
+			img: 'char/hero3.png',
 		}));
 	};
 	
@@ -444,7 +449,7 @@ const battle = modules.define('battle')
 				const {x, y} = a;
 
 				// Draw sprite
-				image.drawImage(ctx, 'char/hero'+i+'.png', x, y);
+				image.drawImage(ctx, a.img, x, y);
 
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
