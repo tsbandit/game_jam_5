@@ -13,6 +13,7 @@ const image = modules.define('image')
 		'room/stairs_up.png',
 		'room/stairs_down.png',
 		'room/fountain.png',
+		'room/background.png',
 		'hello.png',
 		'char/wolf.png',
 		'char/lobster.png',

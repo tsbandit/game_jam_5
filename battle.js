@@ -8,8 +8,7 @@ const battle = modules.define('battle')
 .import('util')
 .import('title')
 .export(function (defs) {
-	// Battle screen
-    var game = defs.game;
+    const {audio,util,game,image} = defs;
 	
 	// === SPELLS ==========================
 	
@@ -123,7 +122,6 @@ const battle = modules.define('battle')
 	
 	var mxg = 0;
 	var myg = 0;
-    const {audio,util} = defs;
         
     var Combatant = function(name, hp, dmg, speed) {
         this.name = name;
@@ -446,7 +444,7 @@ const battle = modules.define('battle')
 				const {x, y} = a;
 
 				// Draw sprite
-				defs.image.drawImage(ctx, 'char/hero.png', x, y);
+				image.drawImage(ctx, 'char/hero.png', x, y);
 
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
@@ -472,7 +470,7 @@ const battle = modules.define('battle')
 				
 				// Draw sprite
 				if (e.hp > 0)
-					defs.image.drawImage(ctx, e.pictureName, x, y);
+					image.drawImage(ctx, e.pictureName, x, y);
 				
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
@@ -556,6 +554,7 @@ const battle = modules.define('battle')
 		};
 				
 		var drawStandard = function(ctx) {
+			image.drawImage(ctx, 'room/background.png', 0, 0);
 			drawAllies(ctx);
 			drawEnemies(ctx);
 		};
