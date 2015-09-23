@@ -15,7 +15,7 @@ const party_screen = modules.define('party_screen')
 		const statLineHeight = 20;
 		
 		function drawPartyMember(ctx, m, x, y) {
-			image.drawImage(ctx, 'char/hero.png', x + 10, y + 10);
+			image.drawImage(ctx, m.img, x + 10, y + 10);
 			
 			ctx.font = "bold 18pt sans-serif";
 			ctx.fillStyle = "#060";
