@@ -145,7 +145,7 @@ const map_screen = modules.define('map_screen')
 				const x = Math.floor(grid[y].length * Math.random());
 				grid.stair_forward = grid[y][x];
 			} while(grid.stair_forward === grid.stair_backward);
-			grid.stair_forward.type = 'stair_forward';
+			grid.stair_forward.type = 'boss';
 
 			return grid;
 		};
@@ -167,8 +167,10 @@ const map_screen = modules.define('map_screen')
 			image.drawImage(ctx, 'room/room.png', sx, sy);
 
 			util.dispatch(room, {
-				mob: () =>
+				boss: () =>
 					image.drawImage(ctx, 'room/boss.png', sx, sy),
+				mob: () =>
+					image.drawImage(ctx, 'char/wolf.png', sx, sy),
 				stair_forward: () =>
 					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
 				stair_backward: () =>
@@ -235,10 +237,14 @@ const map_screen = modules.define('map_screen')
 				py = ry;
 				update_visibility();
 
+				// TODO (Tommy): Maybe don't remove the mob until AFTER battle?
 				util.dispatch(room, {
+					boss: () => {
+						room.type = 'stair_forward';
+
+						return game.ui = battle.initUi(ui, pz);
+					},
 					mob: () => {
-						const todo = x => console.log('TODO: '+x);
-						todo("Maybe don't remove the mob until AFTER battle?");
 						room.type = 'empty';
 
 						return game.ui = battle.initUi(ui, pz);
