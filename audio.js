@@ -143,18 +143,21 @@ const audio = modules.define('audio')
 		if (this.pos < this.introLength) {
 			const D = 0.1;  // A small delay; helps eliminate seams
 			playClip(this.introClip, D, false, this.pos);
-			playClip(this.loopClip, D + this.introLength - this.pos, true, 0);
+			if(this.loopClip !== null)
+				playClip(this.loopClip, D + this.introLength - this.pos, true, 0);
 		} else {
-			playClip(this.loopClip, 0, true, this.pos - this.introLength);
+			if(this.loopClip !== null)
+				playClip(this.loopClip, 0, true, this.pos - this.introLength);
 		}
 	};
 	// Pause song
 	Song.prototype.pause = function () {
 		stopClip(this.introClip);
-		stopClip(this.loopClip);
+		if(this.loopClip !== null)
+			stopClip(this.loopClip);
 		
 		this.pos = audioContext.currentTime - this.introClip.startTime;
-		if (this.pos >= this.introLength) {
+		if (this.pos >= this.introLength && this.loopClip !== null) {
 			this.pos = audioContext.currentTime + this.introLength - this.loopClip.startTime;
 			while (this.pos >= this.introLength + this.loopLength)
 				this.pos -= this.loopLength;
