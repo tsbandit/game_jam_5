@@ -152,15 +152,23 @@ const battle = modules.define('battle')
 
 		const m = floor_number;  // bonus stats modifier
 
-		enemies.push(makeEnemyBasic({
-			name: "Wolf",
-			hp: 7+m*3,
-			dmg: 5+m,
-			speed: 1.2+(Math.PI/96),
-			actions: [basicAttack],
-			place: 0,
-			pictureName: "char/wolf.png",
-		}));
+		let n;  // Number of enemies
+		do n = util.poisson(2.5);
+		while(n <= 0);
+
+		for(let i=0; i<n; ++i) {
+			enemies.push(makeEnemyBasic({
+				name: "Wolf",
+				hp: 7+m*3,
+				dmg: 5+m,
+				speed: 1.2+(Math.PI/96),
+				actions: [basicAttack],
+				place: i,
+				pictureName: "char/wolf.png",
+			}));
+		}
+
+		/*
 		enemies.push(makeEnemyBasic({
 			name: "Lobster",
 			hp: 8+m*2,
@@ -179,6 +187,7 @@ const battle = modules.define('battle')
 			place: 2,
 			pictureName: "char/tree.png",
 		}));
+		*/
 
 		return enemies;
 	};
