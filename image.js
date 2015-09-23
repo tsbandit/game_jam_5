@@ -9,7 +9,10 @@ const image = modules.define('image')
 	let imageCache = {};
 	const imageList = [
 		'room/room.png',
-		'char/hero.png',
+		'char/hero0.png',
+		'char/hero1.png',
+		'char/hero2.png',
+		'char/hero3.png',
 		'room/stairs_up.png',
 		'room/stairs_down.png',
 		'room/fountain.png',

@@ -444,7 +444,7 @@ const battle = modules.define('battle')
 				const {x, y} = a;
 
 				// Draw sprite
-				image.drawImage(ctx, 'char/hero.png', x, y);
+				image.drawImage(ctx, 'char/hero'+i+'.png', x, y);
 
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";

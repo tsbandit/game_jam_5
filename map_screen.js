@@ -196,7 +196,7 @@ const map_screen = modules.define('map_screen')
 
 				// Draw player
 				const [sx, sy] = screen_coords(px, py);
-				image.drawImage(ctx, 'char/hero.png', sx, sy);
+				image.drawImage(ctx, 'char/hero0.png', sx, sy);
 
 				// Display current floor number
 				ctx.fillStyle = 'black';
