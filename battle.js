@@ -148,48 +148,56 @@ const battle = modules.define('battle')
 	};
 
 	module.spawn_enemies = function(floor_number) {
-		const enemies = [];
+		const f = function() {
+			const enemies = [];
 
-		const m = floor_number;  // bonus stats modifier
+			const m = floor_number;  // bonus stats modifier
 
-		let n;  // Number of enemies
-		do n = util.poisson(2.5);
-		while(n <= 0);
+			const n = util.poisson(2.5);  // Number of enemies
 
-		for(let i=0; i<n; ++i) {
+			for(let i=0; i<n; ++i) {
+				enemies.push(makeEnemyBasic({
+					name: "Wolf",
+					hp: 7+m*3,
+					dmg: 5+m,
+					speed: 1.0 + 0.3*Math.random(),
+					actions: [basicAttack],
+					place: i,
+					pictureName: "char/wolf.png",
+				}));
+			}
+
+/*
 			enemies.push(makeEnemyBasic({
-				name: "Wolf",
-				hp: 7+m*3,
-				dmg: 5+m,
-				speed: 1.0 + 0.3*Math.random(),
+				name: "Lobster",
+				hp: 8+m*2,
+				dmg: 4+m,
+				speed: 1.5+(Math.PI/95),
 				actions: [basicAttack],
-				place: i,
-				pictureName: "char/wolf.png",
+				place: 1,
+				pictureName: "char/lobster.png",
 			}));
-		}
+			enemies.push(makeEnemyBasic({
+				name: "Evil Tree",
+				hp: 7+m*2,
+				dmg: 6+m,
+				speed: 2.0+(Math.PI/94),
+				actions: [heal],
+				place: 2,
+				pictureName: "char/tree.png",
+			}));
+*/
 
-		/*
-		enemies.push(makeEnemyBasic({
-			name: "Lobster",
-			hp: 8+m*2,
-			dmg: 4+m,
-			speed: 1.5+(Math.PI/95),
-			actions: [basicAttack],
-			place: 1,
-			pictureName: "char/lobster.png",
-		}));
-		enemies.push(makeEnemyBasic({
-			name: "Evil Tree",
-			hp: 7+m*2,
-			dmg: 6+m,
-			speed: 2.0+(Math.PI/94),
-			actions: [heal],
-			place: 2,
-			pictureName: "char/tree.png",
-		}));
-		*/
+			util.assert
 
-		return enemies;
+			return enemies;
+		};
+
+		let result;
+		do result = f()
+		while(result.length === 0  ||  result.length > 7);
+
+		return result;
 	};
 	
 	var mxg = 0;
