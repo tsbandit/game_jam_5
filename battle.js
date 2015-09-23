@@ -124,6 +124,64 @@ const battle = modules.define('battle')
 			img: 'char/hero3.png',
 		}));
 	};
+
+	const makeEnemyBasic = function({name, hp, dmg, speed, actions, place, pictureName}) {
+		const ENEMY_W = 32;
+		const ENEMY_H = 32;
+		const ENEMY_B = 16;
+		const ENEMY_X = game.WIDTH-40-ENEMY_W;
+		const ENEMY_Y = 120;
+
+		return {
+			name: name,
+			hp: hp,
+			dmg: dmg,
+			speed: speed,
+			actions: actions,
+			x: ENEMY_X,
+			y: ENEMY_Y + place*(ENEMY_H+ENEMY_B),
+			w: ENEMY_W,
+			h: ENEMY_H,
+			cd: speed*1000,
+			pictureName: pictureName,
+		};
+	};
+
+	module.spawn_enemies = function(floor_number) {
+		const enemies = [];
+
+		const m = floor_number;  // bonus stats modifier
+
+		enemies.push(makeEnemyBasic({
+			name: "Wolf",
+			hp: 7+m*3,
+			dmg: 5+m,
+			speed: 1.2+(Math.PI/96),
+			actions: [basicAttack],
+			place: 0,
+			pictureName: "char/wolf.png",
+		}));
+		enemies.push(makeEnemyBasic({
+			name: "Lobster",
+			hp: 8+m*2,
+			dmg: 4+m,
+			speed: 1.5+(Math.PI/95),
+			actions: [basicAttack],
+			place: 1,
+			pictureName: "char/lobster.png",
+		}));
+		enemies.push(makeEnemyBasic({
+			name: "Evil Tree",
+			hp: 7+m*2,
+			dmg: 6+m,
+			speed: 2.0+(Math.PI/94),
+			actions: [heal],
+			place: 2,
+			pictureName: "char/tree.png",
+		}));
+
+		return enemies;
+	};
 	
 	var mxg = 0;
 	var myg = 0;
@@ -159,7 +217,7 @@ const battle = modules.define('battle')
 
 		audio.playMusic('battle');
 		
-		const enemies = [];
+		let enemies = [];
 		
 		let buttons = [];
 		let spellButtons = [];
@@ -170,14 +228,8 @@ const battle = modules.define('battle')
 		const BUTTON_W = 160;
 		const BUTTON_H = 30;
 		const BUTTON_B = 6;
-		
-		const ENEMY_W = 32;
-		const ENEMY_H = 32;
-		const ENEMY_B = 16;
-		const ENEMY_X = game.WIDTH-40-ENEMY_W;
-		const ENEMY_Y = 120;
-		
-		
+
+
 		// === MAKER FUNCTIONS ==================================
 
 		// Columns: 4 total, index 0 is LEFT
@@ -284,22 +336,9 @@ const battle = modules.define('battle')
 					selected: false,
 				}));
 			}
-		}
-		
-		var makeEnemyBasic = function({name, hp, dmg, speed, actions, place, pictureName}) { return {
-			name: name,
-			hp: hp,
-			dmg: dmg,
-			speed: speed,
-			actions: actions,
-			x: ENEMY_X,
-			y: ENEMY_Y + place*(ENEMY_H+ENEMY_B),
-			w: ENEMY_W,
-			h: ENEMY_H,
-			cd: speed*1000,
-			pictureName: pictureName,
-		};};
-	
+		};
+
+
 		// === MENU BUTTONS ==================================
 		
 		var attackButton = makeButtonGrid({
@@ -373,41 +412,14 @@ const battle = modules.define('battle')
 					}
 				},
 			})[action.target]();
-		}
-		
-		// === ENEMIES ================================
-		{
-			const m = floor_number;  // bonus stats modifier
+		};
 
-			enemies.push(makeEnemyBasic({
-				name: "Wolf",
-				hp: 7+m*3,
-				dmg: 5+m,
-				speed: 1.2+(Math.PI/96),
-				actions: [basicAttack],
-				place: 0,
-				pictureName: "char/wolf.png",
-			}));
-			enemies.push(makeEnemyBasic({
-				name: "Lobster",
-				hp: 8+m*2,
-				dmg: 4+m,
-				speed: 1.5+(Math.PI/95),
-				actions: [basicAttack],
-				place: 1,
-				pictureName: "char/lobster.png",
-			}));
-			enemies.push(makeEnemyBasic({
-				name: "Evil Tree",
-				hp: 7+m*2,
-				dmg: 6+m,
-				speed: 2.0+(Math.PI/94),
-				actions: [heal],
-				place: 2,
-				pictureName: "char/tree.png",
-			}));
-		}
-		
+
+		// === ENEMIES ================================
+
+		enemies = module.spawn_enemies(floor_number);
+
+
 		// === THE REST OF IT ==================================
 		
 		var overButton = function(button) {
