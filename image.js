@@ -43,9 +43,10 @@ const image = modules.define('image')
 		drawImage(ctx, filename) {
 			let imageArgs = Array.prototype.slice.call(arguments,2);
 			let cachedImage = loader.get(filename);
-				
+
 			// Obvious, but not crash-y, indication that image is not in cache
-			//if (cachedImage === undefined) { cachedImage = imageCache['hello.png']; }
+			if(cachedImage === null)
+				cachedImage = loader.get('hello.png');
 			
 			imageArgs.unshift(cachedImage);
 			ctx.drawImage.apply(ctx,imageArgs);
