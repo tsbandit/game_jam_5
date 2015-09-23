@@ -9,7 +9,39 @@ const battle = modules.define('battle')
 .import('title')
 .export(function (defs) {
     const {audio,util,game,image} = defs;
-	
+
+	// === ANIMATIONS ==========================
+
+	const stand_anim = function(a) {return {
+		tick() {},
+		draw(ctx) {
+			image.drawImage(ctx, a.pictureName, a.x, a.y);
+		},
+	};};
+
+	const lerp_anim = function(a, sx, sy, dx, dy, time, next) {
+		const result = {
+			tick(elapsed) {
+				const new_time = time - elapsed;
+				const r = new_time / time;
+				sx = r*sx + (1-r)*dx;
+				sy = r*sy + (1-r)*dy;
+				time = new_time;
+
+				if(time <= 0) {
+					result.tick = next.tick;
+					result.draw = next.draw;
+					if(time < 0)
+						result.tick(-time);
+				}
+			},
+			draw(ctx) {
+				image.drawImage(ctx, a.pictureName, sx, sy)
+			},
+		};
+		return result;
+	};
+
 	// === SPELLS ==========================
 	
 	const makeSpell = function({name, cost, target, effect}) { return {
@@ -24,6 +56,11 @@ const battle = modules.define('battle')
 		target: "enemy",
 		effect: function(source, target) {
 			target.hp -= source.dmg;
+
+			const {x: sx, y: sy} = source;
+			const {x: dx, y: dy} = target;
+
+			source.anim = lerp_anim(source, sx, sy, dx, dy, 500, stand_anim(source));
 		}
 	};
 	
@@ -60,7 +97,7 @@ const battle = modules.define('battle')
 	const ALLY_X = 40;
 	const ALLY_Y = 120;
 
-	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place, img}) { return {
+	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place, pictureName}) { return {
 		name: name,
 		hp: hp,
 		maxhp: hp,
@@ -70,12 +107,11 @@ const battle = modules.define('battle')
 		spells: spells,
 		x: ALLY_X,
 		y: ALLY_Y + place*(ALLY_H+ALLY_B),
-		anim: {type: 'stand'},
 		w: ALLY_W,
 		h: ALLY_H,
 		cd: speed*1000,
 		exp: 0,
-		img: img,
+		pictureName: pictureName,
 	};};
 	
 	const allies = [];
@@ -92,7 +128,7 @@ const battle = modules.define('battle')
 			speed: 1.0+(Math.PI/100),
 			spells: [],
 			place: 0,
-			img: 'char/hero0.png',
+			pictureName: 'char/hero0.png',
 		}));
 		allies.push(makeAllyBasic({
 			name: "Muscle Sorceress",
@@ -102,7 +138,7 @@ const battle = modules.define('battle')
 			speed: 1.1+(Math.PI/99),
 			spells: [magicMissile, firestorm, heal],
 			place: 1,
-			img: 'char/hero1.png',
+			pictureName: 'char/hero1.png',
 		}));
 		allies.push(makeAllyBasic({
 			name: "Carl",
@@ -112,7 +148,7 @@ const battle = modules.define('battle')
 			speed: 1.2+(Math.PI/98),
 			spells: [],
 			place: 2,
-			img: 'char/hero2.png',
+			pictureName: 'char/hero2.png',
 		}));
 		allies.push(makeAllyBasic({
 			name: "Dave",
@@ -122,7 +158,7 @@ const battle = modules.define('battle')
 			speed: 1.3+(Math.PI/97),
 			spells: [],
 			place: 3,
-			img: 'char/hero3.png',
+			pictureName: 'char/hero3.png',
 		}));
 	};
 
@@ -232,6 +268,12 @@ const battle = modules.define('battle')
 
 	module.initUi = function (map_ui, floor_number, enemies) {
 		util.assert(enemies);
+
+		for(let a of allies)
+			a.anim = stand_anim(a);
+		for(let e of enemies)
+			e.anim = stand_anim(e);
+
 		mxg = myg = 0;
 
 		audio.playMusic('battle');
@@ -457,18 +499,11 @@ const battle = modules.define('battle')
 			return -1;
 		};
 
-		const draw_animation_frame = function(ctx, ally) {
-			const {anim, x, y, img} = ally;
-			util.dispatch(anim, {
-				stand: () =>
-					image.drawImage(ctx, img, x, y),
-			});
-		};
-		const tick_animation = function(elapsed, ally) {
-		};
 		const tickAnimations = function(elapsed) {
 			for(let a of allies)
-				tick_animation(elapsed, a);
+				a.anim.tick(elapsed);
+			for(let e of enemies)
+				e.anim.tick(elapsed);
 		};
         
         var drawAllies = function(ctx) {
@@ -487,7 +522,7 @@ const battle = modules.define('battle')
 				const {x, y} = a;
 
 				// Draw sprite
-				draw_animation_frame(ctx, a);
+				a.anim.draw(ctx);
 
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
@@ -513,7 +548,7 @@ const battle = modules.define('battle')
 				
 				// Draw sprite
 				if (e.hp > 0)
-					image.drawImage(ctx, e.pictureName, x, y);
+					e.anim.draw(ctx);
 				
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
