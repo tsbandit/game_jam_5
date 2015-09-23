@@ -22,21 +22,25 @@ const battle = modules.define('battle')
 	const lerp_anim = function(a, sx, sy, dx, dy, time, next) {
 		const result = {
 			tick(elapsed) {
+				if(time <= 0) {
+					next.tick(elapsed);
+					return;
+				}
+
 				const new_time = time - elapsed;
 				const r = new_time / time;
 				sx = r*sx + (1-r)*dx;
 				sy = r*sy + (1-r)*dy;
 				time = new_time;
 
-				if(time <= 0) {
-					result.tick = next.tick;
-					result.draw = next.draw;
-					if(time < 0)
-						result.tick(-time);
-				}
+				if(time < 0)
+					result.tick(-time);
 			},
 			draw(ctx) {
-				image.drawImage(ctx, a.pictureName, sx, sy)
+				if(time <= 0)
+					next.draw(ctx);
+				else
+					image.drawImage(ctx, a.pictureName, sx, sy)
 			},
 		};
 		return result;
@@ -57,10 +61,22 @@ const battle = modules.define('battle')
 		effect: function(source, target) {
 			target.hp -= source.dmg;
 
+			// Animation
 			const {x: sx, y: sy} = source;
 			const {x: dx, y: dy} = target;
-
-			source.anim = lerp_anim(source, sx, sy, dx, dy, 500, stand_anim(source));
+			const dx1 = 1.06*dx - 0.06*sx;
+			const dy1 = 1.06*dy - 0.06*sy;
+			const dx2 = 1.03*dx - 0.03*sx;
+			const dy2 = 1.03*dy - 0.03*sy;
+			source.anim = lerp_anim(source, sx, sy, dx, dy, 100,
+			              lerp_anim(source, dx, dy, sx, sy, 500,
+			              stand_anim(source) ));
+			target.anim = lerp_anim(target, dx,  dy,  dx,  dy,  100,
+			              lerp_anim(target, dx,  dy,  dx1, dy1, 125,
+			              lerp_anim(target, dx1, dy1, dx,  dy,  125,
+			              lerp_anim(target, dx,  dy,  dx2, dy2, 125,
+			              lerp_anim(target, dx2, dy2, dx,  dy,  125,
+			              stand_anim(target) )))));
 		}
 	};
 	
