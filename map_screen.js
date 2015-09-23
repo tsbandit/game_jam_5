@@ -175,8 +175,14 @@ const map_screen = modules.define('map_screen')
 			util.dispatch(room, {
 				boss: () =>
 					image.drawImage(ctx, 'room/boss.png', sx, sy),
-				mob: () =>
-					image.drawImage(ctx, 'char/wolf.png', sx, sy),
+				mob: ({enemies}) => {
+					image.drawImage(ctx, 'char/wolf.png', sx, sy);
+
+					ctx.fillStyle = 'white';
+					ctx.font = 'bold 16px sans-serif';
+					ctx.textAlign = 'right';
+					ctx.fillText(enemies.length, sx+.9*ROOM_W, sy+.9*ROOM_H);
+				},
 				stair_forward: () =>
 					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
 				stair_backward: () =>
