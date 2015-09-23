@@ -585,6 +585,8 @@ const battle = modules.define('battle')
 
         var tickEnemies = function(elapsed) {
 			if (alliesDead()) {
+				audio.playMusic('lost');
+
 				game.ui = defeat_ui;
 				return;
 			}
