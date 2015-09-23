@@ -161,7 +161,7 @@ const battle = modules.define('battle')
 				name: "Wolf",
 				hp: 7+m*3,
 				dmg: 5+m,
-				speed: 1.2+(Math.PI/96),
+				speed: 1.0 + 0.3*Math.random(),
 				actions: [basicAttack],
 				place: i,
 				pictureName: "char/wolf.png",
