@@ -14,6 +14,7 @@ const image = modules.define('image')
 		'room/stairs_down.png',
 		'room/fountain.png',
 		'room/background.png',
+		'ui/title.png',
 		'hello.png',
 		'char/wolf.png',
 		'char/lobster.png',

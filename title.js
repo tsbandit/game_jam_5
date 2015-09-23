@@ -4,19 +4,17 @@ const title = modules.define('title')
 .import('game')
 .import('audio')
 .import('map_screen')
+.import('image')
 .export(function (defs) {
 	// Title screen
-	const {game, audio, map_screen} = defs;
+	const {game, audio, map_screen, image} = defs;
 	
 	var exports = {};
 	
 	exports.initUi = function () {
 		var ui = {
 			draw: function (ctx) {
-				ctx.font = "bold 24pt sans-serif";
-				ctx.fillStyle = "#000";
-				ctx.textAlign = "center";
-				ctx.fillText('DUNGEON SQUARE', game.WIDTH/2, game.HEIGHT/5);
+				image.drawImage(ctx, 'ui/title.png', 0, 0);
 			},
 			tick: function (elapsed) {
 				
