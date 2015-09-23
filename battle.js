@@ -70,6 +70,7 @@ const battle = modules.define('battle')
 		spells: spells,
 		x: ALLY_X,
 		y: ALLY_Y + place*(ALLY_H+ALLY_B),
+		anim: {type: 'stand'},
 		w: ALLY_W,
 		h: ALLY_H,
 		cd: speed*1000,
@@ -455,6 +456,20 @@ const battle = modules.define('battle')
 			}
 			return -1;
 		};
+
+		const draw_animation_frame = function(ctx, ally) {
+			const {anim, x, y, img} = ally;
+			util.dispatch(anim, {
+				stand: () =>
+					image.drawImage(ctx, img, x, y),
+			});
+		};
+		const tick_animation = function(elapsed, ally) {
+		};
+		const tickAnimations = function(elapsed) {
+			for(let a of allies)
+				tick_animation(elapsed, a);
+		};
         
         var drawAllies = function(ctx) {
             ctx.textAlign = "left";
@@ -472,7 +487,7 @@ const battle = modules.define('battle')
 				const {x, y} = a;
 
 				// Draw sprite
-				image.drawImage(ctx, a.img, x, y);
+				draw_animation_frame(ctx, a);
 
 				// Display current cooldown timer
                 ctx.font = "bold 14pt sans-serif";
@@ -651,6 +666,7 @@ const battle = modules.define('battle')
 				drawStandard(ctx);
 				drawEnd(ctx, true);
 			},
+			tick: tickAnimations,
             mouse_clicked: function({mx,my}) {
 				// Level-up
 				for(let a of allies) {
@@ -710,6 +726,7 @@ const battle = modules.define('battle')
 		};
 		
 		var defeat_ui = {
+			tick: tickAnimations,
 			draw: function (ctx) {
 				drawStandard(ctx);
 				drawEnd(ctx, false);
@@ -764,6 +781,7 @@ const battle = modules.define('battle')
 				mxg = mx;
 				myg = my;
 			},
+			tick: tickAnimations,
 		};};
         
 		var ui = {
@@ -771,6 +789,7 @@ const battle = modules.define('battle')
 				drawStandard(ctx);
 			},
 			tick: function (elapsed) {
+				tickAnimations(elapsed);
 				tickCooldowns(elapsed);
 				tickAllies(elapsed);
 				tickEnemies(elapsed);
