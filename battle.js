@@ -221,12 +221,11 @@ const battle = modules.define('battle')
 
 	module.allies = allies;
 
-	module.initUi = function (map_ui, floor_number) {
+	module.initUi = function (map_ui, floor_number, enemies) {
+		util.assert(enemies);
 		mxg = myg = 0;
 
 		audio.playMusic('battle');
-		
-		let enemies = [];
 		
 		let buttons = [];
 		let spellButtons = [];
@@ -422,11 +421,6 @@ const battle = modules.define('battle')
 				},
 			})[action.target]();
 		};
-
-
-		// === ENEMIES ================================
-
-		enemies = module.spawn_enemies(floor_number);
 
 
 		// === THE REST OF IT ==================================

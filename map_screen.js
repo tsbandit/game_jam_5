@@ -91,7 +91,7 @@ const map_screen = modules.define('map_screen')
 				yield grid[y+1][x];
 		};
 
-		const make_room = function(grid, x, y) {
+		const make_room = function(grid, x, y, z) {
 			// Legal types:
 			//   'mob', 'empty', 'stair_forward', 'stair_backward', 'fountain'
 
@@ -105,13 +105,18 @@ const map_screen = modules.define('map_screen')
 			else
 				type = 'empty';
 
-			return {
+			const room = {
 				type: type,
 				x: x,
 				y: y,
 				visible: false,
 				grid: grid,
 			};
+
+			if(type === 'mob')
+				room.enemies = battle.spawn_enemies(z);
+
+			return room;
 		};
 
 		const generate_floor = function(z) {
@@ -120,7 +125,7 @@ const map_screen = modules.define('map_screen')
 			for(let i=0; i<4; ++i) {
 				grid.push([]);
 				for(let j=0; j<5; ++j)
-					grid[i].push(make_room(grid, j, i));
+					grid[i].push(make_room(grid, j, i, z));
 			}
 
 			// Generate the staircase backward if necessary
@@ -146,6 +151,7 @@ const map_screen = modules.define('map_screen')
 				grid.stair_forward = grid[y][x];
 			} while(grid.stair_forward === grid.stair_backward);
 			grid.stair_forward.type = 'boss';
+			grid.stair_forward.enemies = battle.spawn_enemies(z);
 
 			return grid;
 		};
@@ -239,15 +245,15 @@ const map_screen = modules.define('map_screen')
 
 				// TODO (Tommy): Maybe don't remove the mob until AFTER battle?
 				util.dispatch(room, {
-					boss: () => {
+					boss: ({enemies}) => {
 						room.type = 'stair_forward';
 
-						return game.ui = battle.initUi(ui, pz);
+						return game.ui = battle.initUi(ui, pz, enemies);
 					},
-					mob: () => {
+					mob: ({enemies}) => {
 						room.type = 'empty';
 
-						return game.ui = battle.initUi(ui, pz);
+						return game.ui = battle.initUi(ui, pz, enemies);
 					},
 					stair_forward: () => {
 						++pz;
