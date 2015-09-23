@@ -287,7 +287,7 @@ const battle = modules.define('battle')
 		
 		var makeSpellButtons = function(active) {
 			for (let i=0; i<active.spells.length; i++) {
-				spell = active.spells[i];
+				const spell = active.spells[i];
 				spellButtons.push(makeButtonGrid({
 					name: spell.name,
 					col: 1,
@@ -509,7 +509,7 @@ const battle = modules.define('battle')
 		
 		var drawMenu = function(ctx, attacker) {
 			drawButton(ctx, attackButton);
-			drawButton(ctx, spellsButton);
+			//drawButton(ctx, spellsButton);
 		};
 		
 		var hasSpells = function(combatant) {
@@ -545,6 +545,8 @@ const battle = modules.define('battle')
 		}
 		
 		var drawSpellButton = function(ctx, i, button, active) {
+			return drawButton(ctx, button);
+
 			const {x, y, w, h, f0, f1, f2, name, enabled, selected} = button;
 			if (enabled) {
 				ctx.fillStyle = (overButton(button) || selected ? f2 : f1);
@@ -695,7 +697,7 @@ const battle = modules.define('battle')
 			
 			makeSpellButtons(active);
 			for (let i=0; i<spellButtons.length; i++) {
-				spellButtons[i].allowed = (active.mp >= active.spells[i].cost);
+				spellButtons[i].allowed = (active.spells[i].isPossible(active));
 			}
 			spellsButton.allowed = active.spells.length > 0;
 
@@ -742,6 +744,7 @@ const battle = modules.define('battle')
 						let {active, allowed, activate} = spellButton;
 						if (allowed) {
 							for (let sb of spellButtons) sb.allowed = false;
+							activate();
 						}
 					}
 				}
