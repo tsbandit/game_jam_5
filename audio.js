@@ -44,7 +44,8 @@ const audio = modules.define('audio')
 	const musicList = [
 		{ name: 'battle', intro: 'music/battle_intro.ogg', loop: 'music/battle_loop.ogg' },
 		{ name: 'dungeon', intro: 'music/dungeon_intro.ogg', loop: 'music/dungeon_loop.ogg' },
-		{ name: 'lost', intro: 'music/lost.ogg' }
+		{ name: 'lost', intro: 'music/lost.ogg' },
+		{ name: 'victory', intro: 'music/victory.ogg' },
 	];
 	const songs = {};
 	
