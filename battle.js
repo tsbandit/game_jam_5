@@ -121,7 +121,7 @@ const battle = modules.define('battle')
 		mp: mp,
 		dmg: dmg,
 		speed: speed,
-		spells: spells,
+		spells: [basicAttack, ...spells],
 		x: ALLY_X,
 		y: ALLY_Y + place*(ALLY_H+ALLY_B),
 		w: ALLY_W,
@@ -843,6 +843,8 @@ const battle = modules.define('battle')
 
 			const spells = active.spells;
 
+			let selected;  // Index number of currently selected menu-option
+
 			const this_ui = {
 				tick: tickAnimations,
 				draw(ctx) {
@@ -853,7 +855,7 @@ const battle = modules.define('battle')
 					for(let i=0; i<spells.length; ++i) {
 						const y = Y+i*H;
 
-						if(over(X, y, W, H))
+						if(over(X, y, W, H)  ||  i === selected)
 							ctx.fillStyle = 'blue';
 						else
 							ctx.fillStyle = '#44f';
@@ -877,6 +879,8 @@ const battle = modules.define('battle')
 							spell.effect(active, target);
 						};
 
+						selected = i;
+
 						return ({
 							'enemy': () =>
 								game.ui = targeting_ui_enemy(this_ui, effect),
@@ -897,7 +901,11 @@ const battle = modules.define('battle')
 				},
 			};
 
-			return game.ui = this_ui;
+			// Auto-select the ATTACK button at the start
+			util.assert(active.spells[0] === basicAttack);
+			const effect = (target) => basicAttack.effect(active, target);
+			selected = 0;
+			return game.ui = targeting_ui_enemy(this_ui, effect);
 		};
 		
 		var returnToCombat = function() {
