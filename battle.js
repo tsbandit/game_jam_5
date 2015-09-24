@@ -183,7 +183,7 @@ const battle = modules.define('battle')
 		const ENEMY_W = 32;
 		const ENEMY_H = 32;
 		const ENEMY_B = 16;
-		const ENEMY_X = game.WIDTH-40-ENEMY_W;
+		const ENEMY_X = game.WIDTH-240-ENEMY_W;
 		const ENEMY_Y = 120;
 
 		return {
@@ -836,9 +836,9 @@ const battle = modules.define('battle')
 		};
 
 		var initMenu = function(active) {
-			const X = 100;
-			const Y = 100;
 			const W = 200;
+			const X = game.WIDTH - W - 20;
+			const Y = 160;
 			const H = 24;
 
 			const spells = active.spells;
