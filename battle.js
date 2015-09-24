@@ -675,8 +675,8 @@ const battle = modules.define('battle')
 			for (var i=0; i<allies.length; i++) {
 				var a = allies[i];
 				if (a.cd <= 0 && !enemiesDead()) {
-					initMenu(a); // TODO MAKE THIS NOT BAD
 					a.cd += a.speed*1000;
+					return initMenu(a);
 				}
 			}
 		};
@@ -758,19 +758,41 @@ const battle = modules.define('battle')
 		};
 
 		var initMenu = function(active) {
-			attackButton.selected = false;
-			spellsButton.selected = false;
-			spellButtons = [];
-			targetButtons = [];
-			
-			makeSpellButtons(active);
-			for (let i=0; i<spellButtons.length; i++) {
-				spellButtons[i].allowed = (active.spells[i].isPossible(active));
-			}
-			spellsButton.allowed = active.spells.length > 0;
+			const X = 100;
+			const Y = 100;
+			const W = 200;
+			const H = 24;
 
-			game.ui = menu_ui(active);
-			on_attack_button_clicked(active);  // Such a hack
+			const spells = active.spells;
+
+			game.ui = {
+				tick: tickAnimations,
+				draw(ctx) {
+					const FONT_SIZE = Math.floor(H*.8);
+
+					drawStandard(ctx);
+
+					for(let i=0; i<spells.length; ++i) {
+						const y = Y+i*H;
+
+						ctx.fillStyle = 'blue';
+						ctx.fillRect(X, y, W, H);
+
+						ctx.font = 'bold '+FONT_SIZE+'px sans-serif';
+						ctx.fillStyle = 'white';
+						ctx.textAlign = 'left';
+						ctx.fillText(spells[i].name, X+.2*H, y+.8*H);
+					}
+				},
+				mouse_clicked({mx, my}) {
+					for(let i=0; i<spells.length; ++i) {
+						if(mx < X  ||  mx >= X+W  ||  my < Y  ||  my >= Y+H)
+							continue;
+
+						
+					}
+				},
+			};
 		};
 		
 		var returnToCombat = function() {

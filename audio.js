@@ -3,7 +3,7 @@
 const audio = modules.define('audio')
 .import('loader')
 .export(function (defs) {
-	
+
 	const {loader} = defs;
 	
 	const soundList = [
