@@ -793,14 +793,13 @@ const battle = modules.define('battle')
 			draw: function (ctx) {
 				drawStandard(ctx);
 				drawMenu(ctx, active);
-				//drawSpellsMenu(ctx, active);
+				drawSpellsMenu(ctx, active);
 				drawTargets(ctx, active);
 			},
             mouse_clicked: function({mx,my}) {
                 if (overButton(attackButton)) {
 					on_attack_button_clicked(active);
 				}
-				/*
 				if (overButton(spellsButton)) {
 					attackButton.selected = false;
 					spellsButton.selected = !spellsButton.selected;
@@ -817,7 +816,6 @@ const battle = modules.define('battle')
 						}
 					}
 				}
-				*/
 				for (let targetButton of targetButtons) {
 					if (overButton(targetButton)) {
 						let {active, allowed, activate} = targetButton;
