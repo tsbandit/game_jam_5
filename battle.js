@@ -770,7 +770,10 @@ const battle = modules.define('battle')
 					drawStandard(ctx);
 					prev_ui.draw(ctx);
 
-					for(let {x, y, w, h} of allies) {
+					for(let {hp, x, y, w, h} of allies) {
+						if(hp <= 0)
+							continue;
+
 						if(over(x, y, w, h))
 							ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
 						else
@@ -780,7 +783,10 @@ const battle = modules.define('battle')
 				},
 				mouse_clicked({mx, my}) {
 					for(let a of allies) {
-						const {x, y, w, h} = a;
+						const {hp, x, y, w, h} = a;
+
+						if(hp <= 0)
+							continue;
 
 						if(!over(x, y, w, h))
 							continue;
@@ -806,7 +812,10 @@ const battle = modules.define('battle')
 					drawStandard(ctx);
 					prev_ui.draw(ctx);
 
-					for(let {x, y, w, h} of enemies) {
+					for(let {hp, x, y, w, h} of enemies) {
+						if(hp <= 0)
+							continue;
+
 						if(over(x, y, w, h))
 							ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
 						else
@@ -816,7 +825,10 @@ const battle = modules.define('battle')
 				},
 				mouse_clicked({mx, my}) {
 					for(let e of enemies) {
-						const {x, y, w, h} = e;
+						const {hp, x, y, w, h} = e;
+
+						if(hp <= 0)
+							continue;
 
 						if(!over(x, y, w, h))
 							continue;
