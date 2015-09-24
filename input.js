@@ -18,8 +18,10 @@ const input = modules.define('input')
 				mx:   ev.clientX - rect.left,
 				my:   ev.clientY - rect.top,
 			};
-			exports.mx = event.mx;
-			exports.my = event.my;
+			if(type === 'mouse_moved') {
+				exports.mx = event.mx;
+				exports.my = event.my;
+			}
 			(game.ui[type] || (() => {})) (event);
 		} };
 
