@@ -100,7 +100,7 @@ const map_screen = modules.define('map_screen')
 			let type;
 			if(rand < 0.5)
 				type = 'mob';
-			else if(rand < 0.53)
+			else if(rand < 0.57)
 				type = 'fountain';
 			else
 				type = 'empty';
