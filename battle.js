@@ -98,8 +98,9 @@ const battle = modules.define('battle')
 		name: "Firestorm",
 		cost: 7,
 		target: "allEnemies",
-		effect: function(source, target) {
-			target.hp -= 4;
+		effect: function(source, targets) {
+			for(let t of targets)
+				t.hp -= 4;
 		}
 	});
 	const heal = makeSpell({
@@ -909,13 +910,11 @@ const battle = modules.define('battle')
 							'ally': () =>
 								game.ui = targeting_ui_ally(this_ui, effect),
 							'allEnemies': () => {
-								for(let e of enemies)
-									effect(e);
+								effect(enemies);
 								return game.ui = ui;
 							},
 							'allAllies': () => {
-								for(let a of allies)
-									effect(a);
+								effect(allies);
 								return game.ui = ui;
 							},
 						}[spell.target]());
