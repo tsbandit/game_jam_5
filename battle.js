@@ -52,13 +52,18 @@ const battle = modules.define('battle')
 	const makeSpell = function({name, cost, target, effect}) { return {
 		name: name,
 		target: target,
-		effect: function(source, target) { effect(source, target); source.mp -= cost; },
+		effect: function(source, target) {
+			util.assert(this.isPossible(source));
+			source.mp -= cost;
+			effect(source, target);
+		},
 		isPossible: function(source) { return source.mp >= cost; },
 	};};
 	
 	const basicAttack = {
 		name: "Attack",
 		target: "enemy",
+		isPossible() {return true;},
 		effect: function(source, target) {
 			target.hp -= source.dmg;
 
@@ -854,6 +859,9 @@ const battle = modules.define('battle')
 			const H = 24;
 
 			const spells = active.spells;
+			const possibilities = [];
+			for(let spell of spells)
+				possibilities.push(spell.isPossible(active));
 
 			let selected;  // Index number of currently selected menu-option
 
@@ -867,7 +875,9 @@ const battle = modules.define('battle')
 					for(let i=0; i<spells.length; ++i) {
 						const y = Y+i*H;
 
-						if(over(X, y, W, H)  ||  i === selected)
+						if(!possibilities[i])
+							ctx.fillStyle = '#808080';
+						else if(over(X, y, W, H)  ||  i === selected)
 							ctx.fillStyle = 'blue';
 						else
 							ctx.fillStyle = '#44f';
@@ -883,7 +893,7 @@ const battle = modules.define('battle')
 					for(let i=0; i<spells.length; ++i) {
 						const y = Y+i*H;
 
-						if(!over(X, y, W, H))
+						if(!possibilities[i] || !over(X, y, W, H))
 							continue;
 
 						const spell = spells[i];
