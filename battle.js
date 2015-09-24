@@ -7,8 +7,9 @@ const battle = modules.define('battle')
 .import('image')
 .import('util')
 .import('title')
+.import('input')
 .export(function (defs) {
-    const {audio,util,game,image} = defs;
+    const {audio,util,game,image,input} = defs;
 
 	// === ANIMATIONS ==========================
 
@@ -757,6 +758,83 @@ const battle = modules.define('battle')
 			else targetButtons = [];
 		};
 
+		const over = function(x, y, w, h) {
+			const {mx, my} = input;
+			return  mx >= x  &&  mx < x+w  &&  my >= y  &&  my < y+h;
+		};
+
+		const targeting_ui_ally = function(prev_ui, effect) {
+			const this_ui = {
+				tick: tickAnimations,
+				draw(ctx) {
+					drawStandard(ctx);
+					prev_ui.draw(ctx);
+
+					for(let {x, y, w, h} of allies) {
+						if(over(x, y, w, h))
+							ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+						else
+							ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+						ctx.fillRect(x, y, w, h);
+					}
+				},
+				mouse_clicked({mx, my}) {
+					for(let a of allies) {
+						const {x, y, w, h} = a;
+
+						if(!over(x, y, w, h))
+							continue;
+
+						effect(a);
+
+						return game.ui = ui;
+					}
+
+					// Only escape the loop when mouse is not over any enemy
+
+					prev_ui.mouse_clicked({mx, my});
+				},
+			};
+
+			return this_ui;
+		};
+
+		const targeting_ui_enemy = function(prev_ui, effect) {
+			const this_ui = {
+				tick: tickAnimations,
+				draw(ctx) {
+					drawStandard(ctx);
+					prev_ui.draw(ctx);
+
+					for(let {x, y, w, h} of enemies) {
+						if(over(x, y, w, h))
+							ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+						else
+							ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+						ctx.fillRect(x, y, w, h);
+					}
+				},
+				mouse_clicked({mx, my}) {
+					for(let e of enemies) {
+						const {x, y, w, h} = e;
+
+						if(!over(x, y, w, h))
+							continue;
+
+						effect(e);
+
+						return game.ui = ui;
+					}
+
+					// Only escape the loop when mouse is not over any enemy
+
+					prev_ui.mouse_clicked({mx, my});
+				},
+			};
+
+			return this_ui;
+		};
+
 		var initMenu = function(active) {
 			const X = 100;
 			const Y = 100;
@@ -765,7 +843,7 @@ const battle = modules.define('battle')
 
 			const spells = active.spells;
 
-			game.ui = {
+			const this_ui = {
 				tick: tickAnimations,
 				draw(ctx) {
 					const FONT_SIZE = Math.floor(H*.8);
@@ -775,7 +853,10 @@ const battle = modules.define('battle')
 					for(let i=0; i<spells.length; ++i) {
 						const y = Y+i*H;
 
-						ctx.fillStyle = 'blue';
+						if(over(X, y, W, H))
+							ctx.fillStyle = 'blue';
+						else
+							ctx.fillStyle = '#44f';
 						ctx.fillRect(X, y, W, H);
 
 						ctx.font = 'bold '+FONT_SIZE+'px sans-serif';
@@ -784,15 +865,39 @@ const battle = modules.define('battle')
 						ctx.fillText(spells[i].name, X+.2*H, y+.8*H);
 					}
 				},
-				mouse_clicked({mx, my}) {
+				mouse_clicked() {
 					for(let i=0; i<spells.length; ++i) {
-						if(mx < X  ||  mx >= X+W  ||  my < Y  ||  my >= Y+H)
+						const y = Y+i*H;
+
+						if(!over(X, y, W, H))
 							continue;
 
-						
+						const spell = spells[i];
+						const effect = function(target) {
+							spell.effect(active, target);
+						};
+
+						return ({
+							'enemy': () =>
+								game.ui = targeting_ui_enemy(this_ui, effect),
+							'ally': () =>
+								game.ui = targeting_ui_ally(this_ui, effect),
+							'allEnemies': () => {
+								for(let e of enemies)
+									effect(e);
+								return game.ui = ui;
+							},
+							'allAllies': () => {
+								for(let a of allies)
+									effect(a);
+								return game.ui = ui;
+							},
+						}[spell.target]());
 					}
 				},
 			};
+
+			return game.ui = this_ui;
 		};
 		
 		var returnToCombat = function() {
