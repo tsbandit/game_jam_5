@@ -19,8 +19,8 @@ const input = modules.define('input')
 				my:   ev.clientY - rect.top,
 			};
 			if(type === 'mouse_moved') {
-				exports.mx = event.mx;
-				exports.my = event.my;
+				input.mx = event.mx;
+				input.my = event.my;
 			}
 			(game.ui[type] || (() => {})) (event);
 		} };
