@@ -142,7 +142,7 @@ const battle = modules.define('battle')
 			mp: 20,
 			dmg: 3,
 			speed: 1.0+(Math.PI/100),
-			spells: [],
+			spells: [magicMissile, firestorm, heal],
 			place: 0,
 			pictureName: 'char/hero0.png',
 		}));
@@ -162,7 +162,7 @@ const battle = modules.define('battle')
 			mp: 20,
 			dmg: 3,
 			speed: 1.2+(Math.PI/98),
-			spells: [],
+			spells: [magicMissile, firestorm, heal],
 			place: 2,
 			pictureName: 'char/hero2.png',
 		}));
@@ -172,7 +172,7 @@ const battle = modules.define('battle')
 			mp: 20,
 			dmg: 4,
 			speed: 1.3+(Math.PI/97),
-			spells: [],
+			spells: [magicMissile, firestorm, heal],
 			place: 3,
 			pictureName: 'char/hero3.png',
 		}));
