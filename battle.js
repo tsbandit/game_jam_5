@@ -1060,6 +1060,7 @@ const battle = modules.define('battle')
 			draw: function (ctx) {
 				drawStandard(ctx);
 				drawEnd(ctx, false);
+				ctx.fillText('On floor: ' + floor_number, game.WIDTH/2, game.HEIGHT/2);
 			},
             mouse_clicked: function({mx,my}) {
                 game.ui = defs.title.initUi();
