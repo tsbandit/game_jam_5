@@ -111,11 +111,11 @@ const map_screen = modules.define('map_screen')
 			// Choose type randomly
 			const rand = Math.random();
 			let type;
-			if(rand < 0.5)
+			if(rand < 0.40)
 				type = 'mob';
-			else if(rand < 0.57)
+			else if(rand < 0.47)
 				type = 'fountain';
-			else if(rand < .62)
+			else if(rand < 0.54)
 				type = 'treasure';
 			else
 				type = 'empty';
@@ -141,9 +141,9 @@ const map_screen = modules.define('map_screen')
 		const generate_floor = function(z) {
 			const grid = [];
 
-			for(let i=0; i<4; ++i) {
+			for(let i=0; i<6; ++i) {
 				grid.push([]);
-				for(let j=0; j<5; ++j)
+				for(let j=0; j<6; ++j)
 					grid[i].push(make_room(grid, j, i, z));
 			}
 
