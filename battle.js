@@ -109,14 +109,23 @@ const battle = modules.define('battle')
 				t.hp -= 4;
 		}
 	});
-	const heal = makeSpell({
-		name: "Heal",
-		cost: 4,
-		target: "ally",
-		effect: function(source, target) {
-			target.hp += 3;
-		}
-	});
+	const heal = function(c, amount) {
+		c.hp += amount;
+		if(c.hp > c.maxhp)
+			c.hp = c.maxhp;
+	};
+	const use_potion = {
+		name: 'Potion',
+		target: 'ally',
+		isPossible(source) {
+			util.assert(allies.indexOf(source) >= 0);
+			return battle.player_data.inventory.potion >= 1;
+		},
+		effect(source, target) {
+			battle.player_data.inventory.potion -= 1;
+			heal(target, 20);
+		},
+	};
 
 	const random_sword = () => ({
 		type: 'weapon',
@@ -166,6 +175,8 @@ const battle = modules.define('battle')
 				const spells = [basicAttack]
 				for(let e of ally.equipment)
 					spells.push(e.spell);
+				if(battle.player_data.inventory.potion > 0)
+					spells.push(use_potion);
 				spells.push(wait);
 				return spells;
 			},
@@ -249,6 +260,7 @@ const battle = modules.define('battle')
 		return {
 			name: name,
 			hp: hp,
+			maxhp: hp,
 			dmg: dmg,
 			speed: speed,
 			actions: actions,

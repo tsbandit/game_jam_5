@@ -28,6 +28,7 @@ const image = modules.define('image')
 		'char/tree.png',
 		'room/boss.png',
 		'item/chest_gold.png',
+		'item/potion.png',
 		'nonexistant.png',
 	];
 		

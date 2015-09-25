@@ -44,7 +44,7 @@ const map_screen = modules.define('map_screen')
 			const pd = battle.player_data;
 
 			pd.equipment = [];
-			pd.inventory = [];
+			pd.inventory = {potion: 3};
 		}
 
 		audio.playMusic('dungeon');
@@ -117,6 +117,8 @@ const map_screen = modules.define('map_screen')
 				type = 'fountain';
 			else if(rand < 0.54)
 				type = 'treasure';
+			else if(rand < 0.58)
+				type = 'potion';
 			else
 				type = 'empty';
 
@@ -218,6 +220,8 @@ const map_screen = modules.define('map_screen')
 					image.drawImage(ctx, 'room/stairs_down.png', sx, sy),
 				fountain: () =>
 					image.drawImage(ctx, 'room/fountain.png', sx, sy),
+				potion: () =>
+					image.drawImage(ctx, 'item/potion.png', sx, sy),
 			});
 		};
 
@@ -315,6 +319,14 @@ const map_screen = modules.define('map_screen')
 						room.type = 'empty';
 
 						battle.player_data.equipment.push(contents);
+					},
+					potion() {
+						const inv = battle.player_data.inventory;
+						if(inv.potion === undefined)
+							inv.potion = 0;
+
+						room.type = 'empty';
+						++inv.potion;
 					},
 				});
 			},
