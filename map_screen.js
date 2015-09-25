@@ -225,14 +225,15 @@ const map_screen = modules.define('map_screen')
 				
 			},
 			mouse_moved: function({mx,my}) {
-				if (party_button.over(mx,my)) { 
+				if (party_button.over(mx,my)) {
 					party_button.fill = '#00f';
 				} else {
 					party_button.fill = '#99f';
 				}
 			},
 			mouse_clicked: function({mx,my}) {
-				if (party_button.over(mx,my)) { return game.ui = party_screen.initUi(ui); }
+				if (party_button.over(mx,my))
+					return game.ui = battle.initUi(ui, pz, undefined);
 				
 				const rx = Math.floor((mx-BASE_X)/ROOM_W);
 				const ry = Math.floor((my-BASE_Y)/ROOM_H);

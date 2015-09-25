@@ -297,6 +297,8 @@ const battle = modules.define('battle')
 
 	module.initUi = function (map_ui, floor_number, enemies) {
 		const no_enemies = (enemies === undefined);
+		if(no_enemies)
+			enemies = [];
 
 		for(let a of allies)
 			a.anim = stand_anim(a);
@@ -688,7 +690,7 @@ const battle = modules.define('battle')
 			}
 			for (var i=0; i<allies.length; i++) {
 				var a = allies[i];
-				if (a.cd <= 0 && !enemiesDead()) {
+				if (a.cd <= 0) {
 					a.cd += a.speed*1000;
 					return initMenu(a);
 				}
@@ -860,11 +862,38 @@ const battle = modules.define('battle')
 			return this_ui;
 		};
 
+		const draw_button = function(ctx, {x, y, w, h, color, text}) {
+			if(over(x, y, w, h))
+				ctx.fillStyle = color.bright;
+			else
+				ctx.fillStyle = color.dark;
+			ctx.fillRect(x, y, w, h);
+			ctx.font = 'bold 19px sans-serif';
+			ctx.fillStyle = 'white';
+			ctx.textAlign = 'left';
+			ctx.fillText(text, x+.2*h, y+.8*h);
+		};
+		const over_button = function({x, y, w, h}) {
+			return over(x, y, w, h);
+		};
+
 		var initMenu = function(active) {
 			const W = 200;
 			const X = game.WIDTH - W - 20;
 			const Y = 160;
 			const H = 24;
+
+			const exit_button = {
+				x: 20,
+				y: game.HEIGHT - 20 - 24,
+				w: 200,
+				h: 24,
+				color: {
+					bright: 'blue',
+					dark:   '#44f',
+				},
+				text: 'Return to game',
+			};
 
 			const spells = active.spells;
 			const possibilities = [];
@@ -896,8 +925,14 @@ const battle = modules.define('battle')
 						ctx.textAlign = 'left';
 						ctx.fillText(spells[i].name, X+.2*H, y+.8*H);
 					}
+
+					if(no_enemies)
+						draw_button(ctx, exit_button);
 				},
 				mouse_clicked() {
+					if(no_enemies && over_button(exit_button))
+						return game.ui = map_ui;
+
 					for(let i=0; i<spells.length; ++i) {
 						const y = Y+i*H;
 
