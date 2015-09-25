@@ -144,6 +144,19 @@ const battle = modules.define('battle')
 			},
 		},
 	});
+	const painful_sword = () => ({
+		type: 'weapon',
+		name: 'Painful sword',
+		spell: {
+			name: 'Painful sword',
+			target: 'enemy',
+			isPossible: () => true,
+			effect(source, target) {
+				source.hp -= Math.floor(source.maxhp*.1 + 0.5);
+				target.hp -= 3*source.dmg;
+			},
+		},
+	});
 
 	// === PARTY ===============================
 	
@@ -199,21 +212,6 @@ const battle = modules.define('battle')
 			spells: [magicMissile, firestorm, heal],
 			place: 0,
 			pictureName: 'char/hero0.png',
-			equipment: [
-				{
-					type: 'weapon',
-					name: 'Painful sword',
-					spell: {
-						name: 'Painful sword',
-						target: 'enemy',
-						isPossible: () => true,
-						effect(source, target) {
-							source.hp -= Math.floor(source.maxhp*.1);
-							target.hp -= 4*source.dmg;
-						},
-					},
-				},
-			],
 		}));
 		allies.push(makeAllyBasic({
 			name: "Muscle Sorceress",
@@ -247,7 +245,10 @@ const battle = modules.define('battle')
 		}));
 	};
 	module.random_loot = function() {
-		return random_sword();
+		if(Math.random() < .5)
+			return random_sword();
+		else
+			return painful_sword();
 	};
 
 	const makeEnemyBasic = function({name, hp, dmg, speed, actions, place, pictureName}) {
