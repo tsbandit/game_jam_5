@@ -612,7 +612,7 @@ const battle = modules.define('battle')
                 ctx.font = "bold 18pt sans-serif";
                 ctx.fillStyle = "#0f0";
                 if (a.hp <= 0) ctx.fillStyle = "#888";
-				var txt = a.name + " " + a.hp;
+				var txt = a.name + " " + a.hp + '/' + a.maxhp;
 				var txtw = ctx.measureText(txt).width;
                 ctx.fillText(txt, 20, 22*(i+1));
 
