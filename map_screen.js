@@ -143,7 +143,7 @@ const map_screen = modules.define('map_screen')
 
 			for(let i=0; i<6; ++i) {
 				grid.push([]);
-				for(let j=0; j<6; ++j)
+				for(let j=0; j<10; ++j)
 					grid[i].push(make_room(grid, j, i, z));
 			}
 
