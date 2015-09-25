@@ -38,6 +38,15 @@ const map_screen = modules.define('map_screen')
 	exports.initUi = function () {
 		battle.initialize_allies();
 
+		// Initialize battle.player_data
+		{
+			battle.player_data = {};
+			const pd = battle.player_data;
+
+			pd.equipment = [];
+			pd.inventory = [];
+		}
+
 		audio.playMusic('dungeon');
 				
 		const party_button = new Button("Party");
