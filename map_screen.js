@@ -190,6 +190,14 @@ const map_screen = modules.define('map_screen')
 			const [sx, sy] = screen_coords(x, y);
 
 			image.drawImage(ctx, 'room/room.png', sx, sy);
+			if(valid_coord(x-1, y))
+				image.drawImage(ctx, 'room/left_open.png', sx, sy);
+			if(valid_coord(x+1, y))
+				image.drawImage(ctx, 'room/right_open.png', sx+ROOM_W-3, sy);
+			if(valid_coord(x, y-1))
+				image.drawImage(ctx, 'room/up_open.png', sx, sy);
+			if(valid_coord(x, y+1))
+				image.drawImage(ctx, 'room/bottom_open.png', sx, sy+ROOM_H-3);
 
 			util.dispatch(room, {
 				boss: () =>
