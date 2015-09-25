@@ -115,6 +115,8 @@ const map_screen = modules.define('map_screen')
 				type = 'mob';
 			else if(rand < 0.57)
 				type = 'fountain';
+			else if(rand < .62)
+				type = 'treasure';
 			else
 				type = 'empty';
 
@@ -126,8 +128,17 @@ const map_screen = modules.define('map_screen')
 				grid: grid,
 			};
 
-			if(type === 'mob')
-				room.enemies = battle.spawn_enemies(z);
+			util.dispatch(room, {
+				mob: () =>
+					room.enemies = battle.spawn_enemies(z),
+				treasure: () =>
+					room.contents = {
+						type: 'weapon',
+						effect(source, target) {
+							target.hp -= util.poisson(6);
+						},
+					},
+			});
 
 			return room;
 		};
@@ -196,6 +207,8 @@ const map_screen = modules.define('map_screen')
 					ctx.textAlign = 'right';
 					ctx.fillText(enemies.length, sx+.9*ROOM_W, sy+.9*ROOM_H);
 				},
+				treasure: () =>
+					image.drawImage(ctx, 'item/chest_gold.png', sx, sy),
 				stair_forward: () =>
 					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
 				stair_backward: () =>
@@ -294,6 +307,11 @@ const map_screen = modules.define('map_screen')
 						room.type = 'empty';
 						for(a of battle.allies)
 							a.hp = a.maxhp;
+					},
+					treasure: ({contents}) => {
+						room.type = 'empty';
+
+						battle.player_data.inventory.push(contents);
 					},
 				});
 			},

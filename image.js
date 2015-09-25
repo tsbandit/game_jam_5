@@ -23,6 +23,7 @@ const image = modules.define('image')
 		'char/lobster.png',
 		'char/tree.png',
 		'room/boss.png',
+		'item/chest_gold.png',
 		'nonexistant.png',
 	];
 		
