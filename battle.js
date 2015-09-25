@@ -285,12 +285,12 @@ const battle = modules.define('battle')
     
     Combatant.prototype.die = function(isAlly) {
         this.hp = 0;
-    }
+    };
 
 	module.allies = allies;
 
 	module.initUi = function (map_ui, floor_number, enemies) {
-		util.assert(enemies);
+		const no_enemies = (enemies === undefined);
 
 		for(let a of allies)
 			a.anim = stand_anim(a);
@@ -299,7 +299,8 @@ const battle = modules.define('battle')
 
 		mxg = myg = 0;
 
-		audio.playMusic('battle');
+		if(!no_enemies)
+			audio.playMusic('battle');
 		
 		let buttons = [];
 		let spellButtons = [];
@@ -673,7 +674,7 @@ const battle = modules.define('battle')
 		};
         
 		var tickAllies = function(elapsed) {
-			if (enemiesDead()) {
+			if (enemiesDead() && !no_enemies) {
 				audio.playMusic('victory');
 
 				game.ui = victory_ui;
