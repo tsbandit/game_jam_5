@@ -65,7 +65,11 @@ const battle = modules.define('battle')
 		target: "enemy",
 		isPossible() {return true;},
 		effect: function(source, target) {
-			target.hp -= source.dmg;
+			const weapon = source.equipment.weapon;
+			if(weapon !== undefined)
+				weapon.effect(source, target);
+			else
+				target.hp -= source.dmg;
 
 			// Animation
 			const {x: sx, y: sy} = source;
@@ -126,7 +130,7 @@ const battle = modules.define('battle')
 	const ALLY_X = 40;
 	const ALLY_Y = 120;
 
-	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place, pictureName}) { return {
+	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place, pictureName, equipment}) { return {
 		name: name,
 		hp: hp,
 		maxhp: hp,
@@ -141,6 +145,7 @@ const battle = modules.define('battle')
 		cd: speed*1000,
 		exp: 0,
 		pictureName: pictureName,
+		equipment: equipment || {},
 	};};
 	
 	const allies = [];
@@ -158,6 +163,14 @@ const battle = modules.define('battle')
 			spells: [magicMissile, firestorm, heal],
 			place: 0,
 			pictureName: 'char/hero0.png',
+			equipment: {
+				weapon: {
+					effect(source, target) {
+						source.hp -= Math.floor(source.maxhp*.1);
+						target.hp -= 4*source.dmg;
+					},
+				},
+			},
 		}));
 		allies.push(makeAllyBasic({
 			name: "Muscle Sorceress",
@@ -210,6 +223,7 @@ const battle = modules.define('battle')
 			h: ENEMY_H,
 			cd: speed*1000,
 			pictureName: pictureName,
+			equipment: {},
 		};
 	};
 
