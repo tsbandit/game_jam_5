@@ -367,6 +367,9 @@ const battle = modules.define('battle')
 		for(let e of enemies)
 			e.anim = stand_anim(e);
 
+		for(let a of allies)
+			a.cd = a.speed * Math.random() * 1000;
+
 		mxg = myg = 0;
 
 		if(!no_enemies)
