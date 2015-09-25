@@ -25,9 +25,10 @@ const input = modules.define('input')
 			(game.ui[type] || (() => {})) (event);
 		} };
 
-		game.canvas.addEventListener('mousemove',    cb('mouse_moved'),   false);
-		game.canvas.addEventListener('mousedragged', cb('mouse_moved'),   false);
-		game.canvas.addEventListener('mousedown',    cb('mouse_clicked'), false);
+		game.canvas.addEventListener('mousemove',    cb('mouse_moved'),    false);
+		game.canvas.addEventListener('mousedragged', cb('mouse_moved'),    false);
+		game.canvas.addEventListener('mousedown',    cb('mouse_clicked'),  false);
+		game.canvas.addEventListener('mouseup',      cb('mouse_released'), false);
 	};
 	
 	return exports;

@@ -59,17 +59,13 @@ const battle = modules.define('battle')
 		},
 		isPossible: function(source) { return source.mp >= cost; },
 	};};
-	
+
 	const basicAttack = {
 		name: "Attack",
 		target: "enemy",
 		isPossible() {return true;},
 		effect: function(source, target) {
-			const weapon = source.equipment.weapon;
-			if(weapon !== undefined)
-				weapon.effect(source, target);
-			else
-				target.hp -= source.dmg;
+			target.hp -= source.dmg;
 
 			// Animation
 			const {x: sx, y: sy} = source;
@@ -121,7 +117,25 @@ const battle = modules.define('battle')
 			target.hp += 3;
 		}
 	});
-	
+
+	const random_sword = () => ({
+		type: 'weapon',
+		name: 'Random sword',
+		spell: {
+			name: 'Random sword',
+			target: 'enemy',
+			isPossible: () => true,
+			effect(source, target) {
+				let dmg = 1;
+
+				while(Math.random() >= 1/2/source.dmg)
+					++dmg;
+
+				target.hp -= dmg;
+			},
+		},
+	});
+
 	// === PARTY ===============================
 	
 	const ALLY_W = 32;
@@ -130,23 +144,34 @@ const battle = modules.define('battle')
 	const ALLY_X = 40;
 	const ALLY_Y = 120;
 
-	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place, pictureName, equipment}) { return {
-		name: name,
-		hp: hp,
-		maxhp: hp,
-		mp: mp,
-		dmg: dmg,
-		speed: speed,
-		spells: [basicAttack, ...spells, wait],
-		x: ALLY_X,
-		y: ALLY_Y + place*(ALLY_H+ALLY_B),
-		w: ALLY_W,
-		h: ALLY_H,
-		cd: speed*1000,
-		exp: 0,
-		pictureName: pictureName,
-		equipment: equipment || {},
-	};};
+	const makeAllyBasic = function({name, hp, mp, dmg, speed, spells, place, pictureName, equipment}) {
+		const ally = {
+			name: name,
+			hp: hp,
+			maxhp: hp,
+			mp: mp,
+			dmg: dmg,
+			speed: speed,
+			x: ALLY_X,
+			y: ALLY_Y + place*(ALLY_H+ALLY_B),
+			w: ALLY_W,
+			h: ALLY_H,
+			cd: speed*1000,
+			exp: 0,
+			pictureName: pictureName,
+			equipment: equipment || [],
+		};
+		Object.defineProperty(ally, 'spells', {
+			get() {
+				const spells = [basicAttack]
+				for(let e of ally.equipment)
+					spells.push(e.spell);
+				spells.push(wait);
+				return spells;
+			},
+		});
+		return ally;
+	};
 	
 	const allies = [];
 
@@ -163,14 +188,21 @@ const battle = modules.define('battle')
 			spells: [magicMissile, firestorm, heal],
 			place: 0,
 			pictureName: 'char/hero0.png',
-			equipment: {
-				weapon: {
-					effect(source, target) {
-						source.hp -= Math.floor(source.maxhp*.1);
-						target.hp -= 4*source.dmg;
+			equipment: [
+				{
+					type: 'weapon',
+					name: 'Painful sword',
+					spell: {
+						name: 'Painful sword',
+						target: 'enemy',
+						isPossible: () => true,
+						effect(source, target) {
+							source.hp -= Math.floor(source.maxhp*.1);
+							target.hp -= 4*source.dmg;
+						},
 					},
 				},
-			},
+			],
 		}));
 		allies.push(makeAllyBasic({
 			name: "Muscle Sorceress",
@@ -202,6 +234,9 @@ const battle = modules.define('battle')
 			place: 3,
 			pictureName: 'char/hero3.png',
 		}));
+	};
+	module.random_loot = function() {
+		return random_sword();
 	};
 
 	const makeEnemyBasic = function({name, hp, dmg, speed, actions, place, pictureName}) {

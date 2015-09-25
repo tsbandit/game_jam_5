@@ -132,12 +132,7 @@ const map_screen = modules.define('map_screen')
 				mob: () =>
 					room.enemies = battle.spawn_enemies(z),
 				treasure: () =>
-					room.contents = {
-						type: 'weapon',
-						effect(source, target) {
-							target.hp -= util.poisson(6);
-						},
-					},
+					room.contents = battle.random_loot(),
 			});
 
 			return room;
@@ -311,7 +306,7 @@ const map_screen = modules.define('map_screen')
 					treasure: ({contents}) => {
 						room.type = 'empty';
 
-						battle.player_data.inventory.push(contents);
+						battle.player_data.equipment.push(contents);
 					},
 				});
 			},
