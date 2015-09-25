@@ -909,6 +909,17 @@ const battle = modules.define('battle')
 
 					drawStandard(ctx);
 
+					// Highlight the active party member
+					{
+						const {x, y, w, h} = active;
+
+						ctx.strokeStyle = '#fff';
+						ctx.lineWidth = 2;
+						ctx.beginPath();
+						ctx.rect(x, y, w, h);
+						ctx.stroke();
+					}
+
 					for(let i=0; i<spells.length; ++i) {
 						const y = Y+i*H;
 
