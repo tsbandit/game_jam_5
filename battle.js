@@ -85,6 +85,12 @@ const battle = modules.define('battle')
 			              stand_anim(target) )))));
 		}
 	};
+	const wait = {
+		name: 'Wait',
+		target: 'none',  //???
+		isPossible() {return true;},
+		effect() {},
+	};
 	
 	const magicMissile = makeSpell({
 		name: "Magic Missile",
@@ -127,7 +133,7 @@ const battle = modules.define('battle')
 		mp: mp,
 		dmg: dmg,
 		speed: speed,
-		spells: [basicAttack, ...spells],
+		spells: [basicAttack, ...spells, wait],
 		x: ALLY_X,
 		y: ALLY_Y + place*(ALLY_H+ALLY_B),
 		w: ALLY_W,
@@ -916,6 +922,10 @@ const battle = modules.define('battle')
 							},
 							'allAllies': () => {
 								effect(allies);
+								return game.ui = ui;
+							},
+							'none': () => {
+								effect();
 								return game.ui = ui;
 							},
 						}[spell.target]());
