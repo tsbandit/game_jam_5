@@ -17,7 +17,7 @@ const map_screen = modules.define('map_screen')
 		this.y = 0;
 		this.w = 160;
 		this.h = 30;
-	}
+	};
 	
 	Button.prototype.over = function (mx, my) {
 		return ((mx > this.x) && (mx < this.x+this.w) &&
@@ -43,7 +43,11 @@ const map_screen = modules.define('map_screen')
 		const party_button = new Button("Party");
 		party_button.x = 400;
 		party_button.y = 50;
-		party_button.fill = '#8cf';
+		party_button.fill = '#99f';
+		const equip_button = new Button('Equipment');
+		equip_button.x = 400;
+		equip_button.y = 100;
+		equip_button.fill = '#99f';
 				
 		const draw_disc = function(ctx, x, y, r, c) {
 			ctx.fillStyle = c;
@@ -220,6 +224,7 @@ const map_screen = modules.define('map_screen')
 				
 				// Draw ui
 				party_button.draw(ctx);
+				equip_button.draw(ctx);
 			},
 			tick: function (elapsed) {
 				
@@ -230,10 +235,18 @@ const map_screen = modules.define('map_screen')
 				} else {
 					party_button.fill = '#99f';
 				}
+				if (equip_button.over(mx,my)) {
+					equip_button.fill = '#00f';
+				} else {
+					equip_button.fill = '#99f';
+				}
 			},
 			mouse_clicked: function({mx,my}) {
 				if (party_button.over(mx,my))
 					return game.ui = battle.initUi(ui, pz, undefined);
+
+				if(equip_button.over(mx,my))
+					return game.ui = party_screen.initUi(ui);
 				
 				const rx = Math.floor((mx-BASE_X)/ROOM_W);
 				const ry = Math.floor((my-BASE_Y)/ROOM_H);
