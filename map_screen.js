@@ -113,11 +113,11 @@ const map_screen = modules.define('map_screen')
 			let type;
 			if(rand < 0.40)
 				type = 'mob';
-			else if(rand < 0.47)
+			else if(rand < 0.41)
 				type = 'fountain';
-			else if(rand < 0.54)
+			else if(rand < 0.45)
 				type = 'treasure';
-			else if(rand < 0.58)
+			else if(rand < 0.49)
 				type = 'potion';
 			else
 				type = 'empty';
