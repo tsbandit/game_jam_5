@@ -203,7 +203,7 @@ const map_screen = modules.define('map_screen')
 					ctx.fillText(enemies.length, sx+.9*ROOM_W, sy+.9*ROOM_H);
 				},
 				treasure: () =>
-					image.drawImage(ctx, 'item/chest_gold.png', sx, sy),
+					image.drawImage(ctx, 'item/chest_gold.png', sx+4, sy+6),
 				stair_forward: () =>
 					image.drawImage(ctx, 'room/stairs_up.png', sx, sy),
 				stair_backward: () =>
