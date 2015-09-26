@@ -244,7 +244,7 @@ const battle = modules.define('battle')
 			pictureName: 'char/hero3.png',
 		}));
 	};
-	module.random_loot = function() {
+	module.random_loot = function() {  // ADD CODE HERE
 		if(Math.random() < .5)
 			return random_sword();
 		else
@@ -297,7 +297,7 @@ const battle = modules.define('battle')
 			return enemies;
 		}
 
-		const f = function() {
+		const f = function() {  // ADD CODE HERE
 			const enemies = [];
 
 			const n = util.poisson(2.5);  // Number of enemies
