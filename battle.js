@@ -773,6 +773,8 @@ const battle = modules.define('battle')
 				if (a.cd <= 0  &&  a.hp > 0) {
 					a.cd += a.speed*1000;
 					yield make_menu_ui(a, resume);
+					if(enemiesDead() && !no_enemies)
+						break;
 				}
 			}
 		};
@@ -863,7 +865,7 @@ const battle = modules.define('battle')
 			return  mx >= x  &&  mx < x+w  &&  my >= y  &&  my < y+h;
 		};
 
-		const targeting_ui_ally = function(prev_ui, effect) {
+		const targeting_ui_ally = function(prev_ui, effect, done_with_turn) {
 			const this_ui = {
 				tick: tickAnimations,
 				draw(ctx) {
@@ -893,10 +895,10 @@ const battle = modules.define('battle')
 
 						effect(a);
 
-						return game.ui = ui;
+						return done_with_turn();
 					}
 
-					// Only escape the loop when mouse is not over any enemy
+					// Only escape the loop when mouse is not over any ally
 
 					prev_ui.mouse_clicked({mx, my});
 				},
@@ -905,7 +907,7 @@ const battle = modules.define('battle')
 			return this_ui;
 		};
 
-		const targeting_ui_enemy = function(prev_ui, effect) {
+		const targeting_ui_enemy = function(prev_ui, effect, done_with_turn) {
 			const this_ui = {
 				tick: tickAnimations,
 				draw(ctx) {
@@ -935,7 +937,7 @@ const battle = modules.define('battle')
 
 						effect(e);
 
-						return game.ui = ui;
+						return done_with_turn();
 					}
 
 					// Only escape the loop when mouse is not over any enemy
@@ -1044,9 +1046,11 @@ const battle = modules.define('battle')
 
 						return ({
 							'enemy': () =>
-								game.ui = targeting_ui_enemy(this_ui, effect),
+								game.ui = targeting_ui_enemy(this_ui, effect,
+								                             done_with_turn  ),
 							'ally': () =>
-								game.ui = targeting_ui_ally(this_ui, effect),
+								game.ui = targeting_ui_ally(this_ui, effect,
+								                            done_with_turn   ),
 							'allEnemies': () => {
 								effect(enemies);
 								return done_with_turn();
@@ -1068,7 +1072,7 @@ const battle = modules.define('battle')
 			util.assert(active.spells[0] === basicAttack);
 			const effect = (target) => basicAttack.effect(active, target);
 			selected = 0;
-			return targeting_ui_enemy(this_ui, effect);
+			return targeting_ui_enemy(this_ui, effect, done_with_turn);
 		};
 		
 		var returnToCombat = function() {
