@@ -132,7 +132,7 @@ const map_screen = modules.define('map_screen')
 
 			util.dispatch(room, {
 				mob: () =>
-					room.enemies = battle.spawn_enemies(z),
+					room.enemies = battle.spawn_enemies(z, false),
 				treasure: () =>
 					room.contents = battle.random_loot(),
 			});
@@ -172,7 +172,7 @@ const map_screen = modules.define('map_screen')
 				grid.stair_forward = grid[y][x];
 			} while(grid.stair_forward === grid.stair_backward);
 			grid.stair_forward.type = 'boss';
-			grid.stair_forward.enemies = battle.spawn_enemies(z);
+			grid.stair_forward.enemies = battle.spawn_enemies(z, true);
 
 			return grid;
 		};

@@ -26,6 +26,7 @@ const image = modules.define('image')
 		'char/wolf.png',
 		'char/lobster.png',
 		'char/tree.png',
+		'char/lion.png',
 		'room/boss.png',
 		'item/chest_gold.png',
 		'item/potion.png',

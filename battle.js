@@ -276,11 +276,29 @@ const battle = modules.define('battle')
 		};
 	};
 
-	module.spawn_enemies = function(floor_number) {
+	module.spawn_enemies = function(floor_number, is_boss) {
+		const m = floor_number;  // bonus stats modifier
+
+		if(is_boss) {
+			const enemies = [];
+			enemies.push(makeEnemyBasic({
+				name: "Lion",
+				hp: 14+m*8,
+				dmg: 5+2*m,
+				speed: 0.8,
+				actions: [basicAttack],
+				place: 0,
+				pictureName: 'char/lion.png',
+				exp: 3+m,
+			}));
+			enemies[0].x -= 32;
+			enemies[0].w = 64;
+			enemies[0].h = 64;
+			return enemies;
+		}
+
 		const f = function() {
 			const enemies = [];
-
-			const m = floor_number;  // bonus stats modifier
 
 			const n = util.poisson(2.5);  // Number of enemies
 
