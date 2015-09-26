@@ -767,33 +767,27 @@ const battle = modules.define('battle')
 			ctx.fillText('Click to continue.', game.WIDTH/2, game.HEIGHT/5+30);
 		};
         
-		var tickAllies = function(elapsed) {
-			if (enemiesDead() && !no_enemies) {
-				audio.playMusic('victory');
-
-				game.ui = victory_ui;
-				return;
-			}
+		var tickAllies = function*(elapsed, resume) {
 			for (var i=0; i<allies.length; i++) {
 				var a = allies[i];
-				if (a.cd <= 0) {
+				if (a.cd <= 0  &&  a.hp > 0) {
 					a.cd += a.speed*1000;
-					return initMenu(a);
+					yield make_menu_ui(a, resume);
 				}
 			}
 		};
 
-        var tickEnemies = function(elapsed) {
-			if (alliesDead()) {
-				audio.playMusic('lost');
-
-				game.ui = defeat_ui;
-				return;
-			}
+        var tickEnemies = function*(elapsed, resume) {
             for (var i=0; i<enemies.length; i++) {
                 var e = enemies[i];
-                if (e.cd <= 0) {
+                if (e.cd <= 0  &&  e.hp > 0) {
                     if (!alliesDead()) {
+						setTimeout(resume, 500);
+						yield {
+							tick: tickAnimations,
+							draw: drawStandard,
+						};
+						
                         enemyAct(e);
                         e.cd += e.speed*1000;
                     }
@@ -968,7 +962,7 @@ const battle = modules.define('battle')
 			return over(x, y, w, h);
 		};
 
-		var initMenu = function(active) {
+		var make_menu_ui = function(active, done_with_turn) {
 			const W = 200;
 			const X = game.WIDTH - W - 20;
 			const Y = 160;
@@ -1055,15 +1049,15 @@ const battle = modules.define('battle')
 								game.ui = targeting_ui_ally(this_ui, effect),
 							'allEnemies': () => {
 								effect(enemies);
-								return game.ui = ui;
+								return done_with_turn();
 							},
 							'allAllies': () => {
 								effect(allies);
-								return game.ui = ui;
+								return done_with_turn();
 							},
 							'none': () => {
 								effect();
-								return game.ui = ui;
+								return done_with_turn();
 							},
 						}[spell.target]());
 					}
@@ -1074,7 +1068,7 @@ const battle = modules.define('battle')
 			util.assert(active.spells[0] === basicAttack);
 			const effect = (target) => basicAttack.effect(active, target);
 			selected = 0;
-			return game.ui = targeting_ui_enemy(this_ui, effect);
+			return targeting_ui_enemy(this_ui, effect);
 		};
 		
 		var returnToCombat = function() {
@@ -1146,8 +1140,19 @@ const battle = modules.define('battle')
 			tick: function (elapsed) {
 				tickAnimations(elapsed);
 				tickCooldowns(elapsed);
-				tickAllies(elapsed);
-				tickEnemies(elapsed);
+				game.ui = game.async(function*(resume) {
+					yield* tickAllies(elapsed, resume);
+					yield* tickEnemies(elapsed, resume);
+					if (alliesDead()) {
+						audio.playMusic('lost');
+						return defeat_ui;
+					}
+					if (enemiesDead() && !no_enemies) {
+						audio.playMusic('victory');
+						return victory_ui;
+					}
+					return ui;
+				});
 			},
 			mouse_moved: function({mx,my}) {
 				mxg = mx;

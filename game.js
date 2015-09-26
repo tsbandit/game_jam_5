@@ -58,7 +58,12 @@ const game = modules.define('game')
 			requestAnimationFrame(anim);
 	
 			return canvas;
-		}
+		},
+
+		async(gen_fn) {
+			const gen = gen_fn(z => game.ui = gen.next().value);
+			return gen.next().value;
+		},
 	};
 	
 	return exports;
