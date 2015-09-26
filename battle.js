@@ -251,7 +251,7 @@ const battle = modules.define('battle')
 			return painful_sword();
 	};
 
-	const makeEnemyBasic = function({name, hp, dmg, speed, actions, place, pictureName}) {
+	const makeEnemyBasic = function({name, hp, dmg, speed, actions, place, pictureName, exp}) {
 		const ENEMY_W = 32;
 		const ENEMY_H = 32;
 		const ENEMY_B = 16;
@@ -271,7 +271,8 @@ const battle = modules.define('battle')
 			h: ENEMY_H,
 			cd: speed*1000,
 			pictureName: pictureName,
-			equipment: {},
+			equipment: [],
+			exp: exp,
 		};
 	};
 
@@ -292,6 +293,7 @@ const battle = modules.define('battle')
 					actions: [basicAttack],
 					place: i,
 					pictureName: "char/wolf.png",
+					exp: 0.4 + 0.4*m,
 				}));
 			}
 
@@ -315,8 +317,6 @@ const battle = modules.define('battle')
 				pictureName: "char/tree.png",
 			}));
 */
-
-			util.assert
 
 			return enemies;
 		};
@@ -779,21 +779,21 @@ const battle = modules.define('battle')
                 }
             }
         };
-        
+
         var alliesDead = function() {
             for (var i=0; i<allies.length; i++) {
                 if (allies[i].hp > 0) return false;
             }
             return true;
         };
-		
+
 		var enemiesDead = function() {
             for (var i=0; i<enemies.length; i++) {
                 if (enemies[i].hp > 0) return false;
             }
             return true;
         };
-		
+
 		var victory_ui = {
 			draw: function (ctx) {
 				drawStandard(ctx);
@@ -805,16 +805,21 @@ const battle = modules.define('battle')
 				for(let a of allies) {
 					// TODO: What if the ally is dead?
 
-					const bonus_hp_0 = Math.floor(Math.sqrt(a.exp) + a.maxhp);
+					const bonus = exp => Math.pow(exp, 0.5);
+
+					const bonus_hp_0 = Math.floor(bonus(a.exp));
 					const base_hp    = a.maxhp - bonus_hp_0;
-					let   bonus_d_0  = Math.floor(Math.sqrt(a.exp)/2 + 3);
+					const bonus_d_0  = Math.floor(bonus(a.exp)/2);
 					const base_d     = a.dmg - bonus_d_0;
 
-					a.exp += floor_number+1;
-					
-					const bonus_hp_1 = Math.floor(Math.sqrt(a.exp) + a.maxhp);
-					const bonus_d_1  = Math.floor(Math.sqrt(a.exp)/2 + 3);
+					//a.exp += (floor_number+1);
+					for(let e of enemies)
+						a.exp += e.exp;
+
+					const bonus_hp_1 = Math.floor(bonus(a.exp));
+					const bonus_d_1  = Math.floor(bonus(a.exp)/2);
 					const healing = bonus_hp_1 - bonus_hp_0;
+
 					a.hp += healing;
 					a.maxhp = base_hp + bonus_hp_1;
 					a.dmg = base_d + bonus_d_1;
