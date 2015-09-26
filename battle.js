@@ -583,14 +583,10 @@ const battle = modules.define('battle')
 					action.effect(enemy, t);
 				},
 				allEnemies:  () => {
-					for (let t of allies) {
-						action.effect(enemy, t);
-					}
+					action.effect(enemy, allies);
 				},
 				allAllies:  () => {
-					for (let t of enemies) {
-						action.effect(enemy, t);
-					}
+					action.effect(enemy, enemies);
 				},
 			})[action.target]();
 		};
