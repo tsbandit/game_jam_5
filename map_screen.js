@@ -134,7 +134,7 @@ const map_screen = modules.define('map_screen')
 				mob: () =>
 					room.enemies = battle.spawn_enemies(z, false),
 				treasure: () =>
-					room.contents = battle.random_loot(),
+					room.contents = battle.random_loot(z),
 			});
 
 			return room;

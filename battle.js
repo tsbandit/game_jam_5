@@ -244,7 +244,7 @@ const battle = modules.define('battle')
 			pictureName: 'char/hero3.png',
 		}));
 	};
-	module.random_loot = function() {  // ADD CODE HERE
+	module.random_loot = function(floor_number) {  // ADD CODE HERE
 		if(Math.random() < .5)
 			return random_sword();
 		else
