@@ -376,20 +376,25 @@ const battle = modules.define('battle')
 	module.allies = allies;
 
 	module.initUi = function (map_ui, floor_number, enemies) {
+		// If 'enemies' is undefined, then this is NOT a battle ...
+		// Just a "healing menu".
 		const no_enemies = (enemies === undefined);
 		if(no_enemies)
 			enemies = [];
 
+		// Initialize people's animations
 		for(let a of allies)
 			a.anim = stand_anim(a);
 		for(let e of enemies)
 			e.anim = stand_anim(e);
 
+		// Initialize people's cooldowns
 		for(let a of allies)
 			a.cd = a.speed * Math.random() * 1000;
 
 		mxg = myg = 0;
 
+		// Play exciting music, but only during real battles.
 		if(!no_enemies)
 			audio.playMusic('battle');
 		
