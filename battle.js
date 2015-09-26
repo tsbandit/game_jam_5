@@ -391,6 +391,8 @@ const battle = modules.define('battle')
 		// Initialize people's cooldowns
 		for(let a of allies)
 			a.cd = a.speed * Math.random() * 1000;
+		for(let e of enemies)
+			e.cd = e.speed * Math.random() * 1000;
 
 		mxg = myg = 0;
 
