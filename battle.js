@@ -823,7 +823,7 @@ const battle = modules.define('battle')
 				for(let a of allies) {
 					// TODO: What if the ally is dead?
 
-					const bonus = exp => Math.pow(exp, 0.5);
+					const bonus = exp => Math.pow(exp, 0.4);
 
 					const bonus_hp_0 = Math.floor(bonus(a.exp));
 					const base_hp    = a.maxhp - bonus_hp_0;
