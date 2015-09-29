@@ -319,6 +319,23 @@ const map_screen = modules.define('map_screen')
 						room.type = 'empty';
 
 						battle.player_data.equipment.push(contents);
+						const old_ui = ui;
+						game.ui = {
+							draw(ctx) {
+								old_ui.draw(ctx);
+								ctx.fillStyle = '#ccc';
+								ctx.fillRect(game.WIDTH/4,game.HEIGHT/4,
+								             game.WIDTH/2,game.HEIGHT/2  );
+								ctx.textAlign = 'center';
+								ctx.fillStyle = 'black';
+								ctx.font = 'bold 24px sans-serif';
+								ctx.fillText('Obtained', game.WIDTH/2, game.HEIGHT/2-16);
+								ctx.fillText(contents.name+'!', game.WIDTH/2, game.HEIGHT/2+16);
+							},
+							mouse_clicked() {
+								game.ui = old_ui;
+							},
+						};
 					},
 					potion() {
 						const inv = battle.player_data.inventory;
