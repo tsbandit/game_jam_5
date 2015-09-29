@@ -251,7 +251,7 @@ const battle = modules.define('battle')
 
 		allies.push(makeAllyBasic({
 			name: "Bobette",
-			hp: 8,
+			hp: 28,
 			mp: 20,
 			dmg: 3,
 			speed: 1.0+(Math.PI/100),
@@ -261,7 +261,7 @@ const battle = modules.define('battle')
 		}));
 		allies.push(makeAllyBasic({
 			name: "Muscle Sorceress",
-			hp: 11, 
+			hp: 31,
 			mp: 20,
 			dmg: 2,
 			speed: 1.1+(Math.PI/99),
@@ -271,7 +271,7 @@ const battle = modules.define('battle')
 		}));
 		allies.push(makeAllyBasic({
 			name: "Carl",
-			hp: 9,
+			hp: 29,
 			mp: 20,
 			dmg: 3,
 			speed: 1.2+(Math.PI/98),
@@ -281,7 +281,7 @@ const battle = modules.define('battle')
 		}));
 		allies.push(makeAllyBasic({
 			name: "Dave",
-			hp: 11,
+			hp: 31,
 			mp: 20,
 			dmg: 4,
 			speed: 1.3+(Math.PI/97),
