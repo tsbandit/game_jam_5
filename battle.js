@@ -49,7 +49,7 @@ const battle = modules.define('battle')
 
 	// === SPELLS ==========================
 	
-	const makeSpell = function({name, cost, target, effect}) { return {
+	const makeSpell = function({name, cost, target, effect, info}) { return {
 		name: name,
 		target: target,
 		effect: function(source, target) {
@@ -58,11 +58,22 @@ const battle = modules.define('battle')
 			effect(source, target);
 		},
 		isPossible: function(source) { return source.mp >= cost; },
+		info(source, target) {
+			return [
+				'Reduce ' + source.name + "'s MP by " + cost,
+				...info(source, target),
+			];
+		},
 	};};
 
 	const basicAttack = {
 		name: "Attack",
 		target: "enemy",
+		info(source, target) {
+			return [
+				"Reduce target's HP by " + source.dmg,
+			];
+		},
 		isPossible() {return true;},
 		effect: function(source, target) {
 			target.hp -= source.dmg;
@@ -88,6 +99,11 @@ const battle = modules.define('battle')
 	const wait = {
 		name: 'Wait',
 		target: 'none',  //???
+		info(source, target) {
+			return [
+				'Skip a turn',
+			];
+		},
 		isPossible() {return true;},
 		effect() {},
 	};
@@ -98,7 +114,7 @@ const battle = modules.define('battle')
 		target: "enemy",
 		effect: function(source, target) {
 			target.hp -= 3;
-		}
+		},
 	});
 	const firestorm = makeSpell({
 		name: "Firestorm",
@@ -114,49 +130,79 @@ const battle = modules.define('battle')
 		if(c.hp > c.maxhp)
 			c.hp = c.maxhp;
 	};
-	const use_potion = {
-		name: 'Potion',
-		target: 'ally',
-		isPossible(source) {
-			util.assert(allies.indexOf(source) >= 0);
-			return battle.player_data.inventory.potion >= 1;
-		},
-		effect(source, target) {
-			battle.player_data.inventory.potion -= 1;
-			heal(target, 20);
-		},
+	const use_potion = function() {
+		const amount = 20;
+
+		return {
+			name: 'Potion (' + battle.player_data.inventory.potion + ' available)',
+			target: 'ally',
+			isPossible(source) {
+				util.assert(allies.indexOf(source) >= 0);
+				return battle.player_data.inventory.potion >= 1;
+			},
+			effect(source, target) {
+				battle.player_data.inventory.potion -= 1;
+				heal(target, amount);
+			},
+			info(source, target) {
+				return [
+					'Consume 1 potion',
+					"Increase target's HP by " + amount,
+				];
+			},
+		};
 	};
 
-	const random_sword = () => ({
-		type: 'weapon',
-		name: 'Random sword',
-		spell: {
+	const random_sword = function() {
+		const amount = 2;
+
+		return {
+			type: 'weapon',
 			name: 'Random sword',
-			target: 'enemy',
-			isPossible: () => true,
-			effect(source, target) {
-				let dmg = 1;
+			spell: {
+				name: 'Random sword',
+				target: 'enemy',
+				isPossible: () => true,
+				effect(source, target) {
+					let dmg = 1;
 
-				while(Math.random() >= 1/2/source.dmg)
-					++dmg;
+					while(Math.random() >= 1/amount/source.dmg)
+						++dmg;
 
-				target.hp -= dmg;
+					target.hp -= dmg;
+				},
+				info(source, target) {
+					return [
+						"Reduce target's HP by random amount",
+						"    (average: " + (amount*source.dmg) + ")",
+					];
+				},
 			},
-		},
-	});
-	const painful_sword = () => ({
-		type: 'weapon',
-		name: 'Painful sword',
-		spell: {
+		};
+	};
+	const painful_sword = function() {
+		const cost = source => Math.floor(source.maxhp*.1 + 0.5);
+		const power = 3;
+		return {
+			type: 'weapon',
 			name: 'Painful sword',
-			target: 'enemy',
-			isPossible: () => true,
-			effect(source, target) {
-				source.hp -= Math.floor(source.maxhp*.1 + 0.5);
-				target.hp -= 3*source.dmg;
+			spell: {
+				name: 'Painful sword',
+				target: 'enemy',
+				isPossible: () => true,
+				effect(source, target) {
+					source.hp -= cost(source);
+					target.hp -= power*source.dmg;
+				},
+				info(source, target) {
+					return [
+						"Reduce target's HP by " + (power*source.dmg),
+						"Reduce "+source.name+"'s HP by "+cost(source),
+					];
+				},
 			},
-		},
-	});
+		};
+	};
 
 	// === PARTY ===============================
 	
@@ -189,7 +235,7 @@ const battle = modules.define('battle')
 				for(let e of ally.equipment)
 					spells.push(e.spell);
 				if(battle.player_data.inventory.potion > 0)
-					spells.push(use_potion);
+					spells.push(use_potion());
 				spells.push(wait);
 				return spells;
 			},
@@ -751,11 +797,54 @@ const battle = modules.define('battle')
 				enemies[i].cd += n;
 			}
 		};
+
+		const over = function(x, y, w, h) {
+			const {mx, my} = input;
+			return  mx >= x  &&  mx < x+w  &&  my >= y  &&  my < y+h;
+		};
+
+		const over_button = function({x, y, w, h}) {
+			return over(x, y, w, h);
+		};
+
+		const draw_info = function(ctx, lines) {
+			ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+			ctx.fillRect(32, game.HEIGHT-lines.length*20-32, game.WIDTH/2-48, lines.length*20);
+
+			ctx.fillStyle = 'white';
+			ctx.font = '16px sans-serif';
+			ctx.textAlign = 'left';
+			for(let i=0; i<lines.length; ++i)
+				ctx.fillText(lines[i], 36, game.HEIGHT-16+(i-lines.length)*20);
+		};
+
+		const display_speed = z => (100/z).toFixed(0);
 				
 		var drawStandard = function(ctx) {
 			image.drawImage(ctx, 'room/background.png', 0, 0);
 			drawAllies(ctx);
 			drawEnemies(ctx);
+
+			for(let a of allies) {
+				if(a.hp <= 0  ||  !over_button(a))
+					continue;
+
+				draw_info(ctx, [
+					a.name,
+					a.dmg + '   strength',
+					display_speed(a.speed) + '   speed',
+				]);
+			}
+			for(let e of enemies) {
+				if(e.hp <= 0  ||  !over_button(e))
+					continue;
+
+				draw_info(ctx, [
+					e.name,
+					e.dmg + '   strength',
+					display_speed(e.speed) + '   speed',
+				]);
+			}
 		};
 		
 		var drawEnd = function(ctx, victory) {
@@ -811,40 +900,65 @@ const battle = modules.define('battle')
             return true;
         };
 
-		var victory_ui = {
-			draw: function (ctx) {
-				drawStandard(ctx);
-				drawEnd(ctx, true);
-			},
-			tick: tickAnimations,
-            mouse_clicked: function({mx,my}) {
-				// Level-up
-				for(let a of allies) {
-					// TODO: What if the ally is dead?
+		var victory_ui = function() {
+			const old_ally_info = {};
+			for(let {name, maxhp, dmg} of allies) {
+				util.assert(old_ally_info[name] === undefined);
+				old_ally_info[name] = {maxhp, dmg};
+			}
 
-					const bonus = exp => Math.pow(exp, 0.4);
+			// Level up
+			for(let a of allies) {
+				// TODO: What if the ally is dead?
 
-					const bonus_hp_0 = Math.floor(bonus(a.exp));
-					const base_hp    = a.maxhp - bonus_hp_0;
-					const bonus_d_0  = Math.floor(bonus(a.exp)/2);
-					const base_d     = a.dmg - bonus_d_0;
+				const bonus = exp => Math.pow(exp, 0.4);
 
-					//a.exp += (floor_number+1);
-					for(let e of enemies)
-						a.exp += e.exp;
+				const bonus_hp_0 = Math.floor(bonus(a.exp));
+				const base_hp    = a.maxhp - bonus_hp_0;
+				const bonus_d_0  = Math.floor(bonus(a.exp)/2);
+				const base_d     = a.dmg - bonus_d_0;
 
-					const bonus_hp_1 = Math.floor(bonus(a.exp));
-					const bonus_d_1  = Math.floor(bonus(a.exp)/2);
-					const healing = bonus_hp_1 - bonus_hp_0;
+				//a.exp += (floor_number+1);
+				for(let e of enemies)
+					a.exp += e.exp;
 
-					a.hp += healing;
-					a.maxhp = base_hp + bonus_hp_1;
-					a.dmg = base_d + bonus_d_1;
-				}
+				const bonus_hp_1 = Math.floor(bonus(a.exp));
+				const bonus_d_1  = Math.floor(bonus(a.exp)/2);
+				const healing = bonus_hp_1 - bonus_hp_0;
 
-                game.ui = map_ui;
-				audio.playMusic('dungeon');
-			},
+				a.hp += healing;
+				a.maxhp = base_hp + bonus_hp_1;
+				a.dmg = base_d + bonus_d_1;
+			}
+
+			return {
+				draw: function (ctx) {
+					drawStandard(ctx);
+					drawEnd(ctx, true);
+
+					// Draw level-up information
+					ctx.fillStyle = '#0f0';
+					ctx.textAlign = 'left';
+					ctx.font = 'bold 16px sans-serif';
+					for(let a of allies) {
+						const old = old_ally_info[a.name];
+						let text = [];
+						if(a.maxhp > old.maxhp)
+							text.push('+' + (a.maxhp-old.maxhp) + ' max HP');
+						if(a.dmg > old.dmg)
+							text.push('+' + (a.dmg-old.dmg) + ' strength\n');
+						for(let i=0; i<text.length; ++i)
+							ctx.fillText(text[i], a.x+50, a.y+14+18*i);
+					}
+				},
+				tick: tickAnimations,
+	            mouse_clicked: function({mx,my}) {
+					// Level-up
+
+	                game.ui = map_ui;
+					audio.playMusic('dungeon');
+				},
+			};
 		};
 
 		const on_attack_button_clicked = function(active) {
@@ -858,11 +972,6 @@ const battle = modules.define('battle')
 				makeTargetButtons(enemies, basicAttack, active);
 			}
 			else targetButtons = [];
-		};
-
-		const over = function(x, y, w, h) {
-			const {mx, my} = input;
-			return  mx >= x  &&  mx < x+w  &&  my >= y  &&  my < y+h;
 		};
 
 		const targeting_ui_ally = function(prev_ui, effect, done_with_turn) {
@@ -960,9 +1069,6 @@ const battle = modules.define('battle')
 			ctx.textAlign = 'left';
 			ctx.fillText(text, x+.2*h, y+.8*h);
 		};
-		const over_button = function({x, y, w, h}) {
-			return over(x, y, w, h);
-		};
 
 		var make_menu_ui = function(active, done_with_turn) {
 			const W = 200;
@@ -971,7 +1077,7 @@ const battle = modules.define('battle')
 			const H = 24;
 
 			const exit_button = {
-				x: 20,
+				x: game.WIDTH/2 + 16,
 				y: game.HEIGHT - 20 - 24,
 				w: 200,
 				h: 24,
@@ -1022,6 +1128,9 @@ const battle = modules.define('battle')
 						ctx.fillStyle = 'white';
 						ctx.textAlign = 'left';
 						ctx.fillText(spells[i].name, X+.2*H, y+.8*H);
+
+						if(over(X, y, W, H))
+							draw_info(ctx, spells[i].info(active));
 					}
 
 					if(no_enemies)
@@ -1153,7 +1262,7 @@ const battle = modules.define('battle')
 					}
 					if (enemiesDead() && !no_enemies) {
 						audio.playMusic('victory');
-						return victory_ui;
+						return victory_ui();
 					}
 					return ui;
 				});
