@@ -676,7 +676,26 @@ const battle = modules.define('battle')
 			for(let e of enemies)
 				e.anim.tick(elapsed);
 		};
-        
+
+        const draw_bar = function(ctx, {style, amount, max, display_max,
+		                                x, y, w, h                       }) {
+			ctx.fillStyle = style;
+			const r = Math.min(Math.max(0, amount/max), 1);
+			ctx.fillRect(x, y, w*r, h);
+
+			ctx.strokeStyle = 'black';
+			ctx.lineWidth = 2;
+			ctx.beginPath();
+			ctx.rect(x, y, w, h);
+			ctx.stroke();
+
+			const text = amount + (display_max ?  '/'+max :  '');
+			ctx.font = 'bold ' + Math.floor(h*.8) + 'px sans-serif';
+			ctx.textAlign = 'left';
+			ctx.fillStyle = 'white';
+			ctx.fillText(text, x+.2*h, y+.8*h);
+		};
+
         var drawAllies = function(ctx) {
             ctx.textAlign = "left";
             for (var i=0; i<allies.length; i++) {
@@ -686,9 +705,9 @@ const battle = modules.define('battle')
                 ctx.font = "bold 18pt sans-serif";
                 ctx.fillStyle = "#0f0";
                 if (a.hp <= 0) ctx.fillStyle = "#888";
-				var txt = a.name + " " + a.hp + '/' + a.maxhp;
+				var txt = a.name;
 				var txtw = ctx.measureText(txt).width;
-                ctx.fillText(txt, 20, 22*(i+1));
+                ctx.fillText(txt, 120, 22*(i+1));
 
 				const {x, y} = a;
 
@@ -696,15 +715,33 @@ const battle = modules.define('battle')
 				if(a.hp > 0)
 					a.anim.draw(ctx);
 
+				// Display HP
+				draw_bar(ctx, {
+					style: 'red',
+					amount: a.hp,
+					max: a.maxhp,
+					display_max: true,
+					x: 20,
+					y: 22*i,
+					w: 50,
+					h: 22,
+				});
+
 				// Display current cooldown timer
-                ctx.font = "bold 14pt sans-serif";
-                ctx.fillStyle = "#444";
-                ctx.fillText((a.cd/1000).toFixed(1), txtw+26, 22*(i+1));
+				draw_bar(ctx, {
+					style: '#00a078',
+					amount: Math.floor(a.cd/10),
+					max: 150,
+					display_max: false,
+					x: 70,
+					y: 22*i,
+					w: 50,
+					h: 22,
+				});
 			}
         };
         
         var drawEnemies = function(ctx) {
-            ctx.textAlign = "right";
             for (var i=0; i<enemies.length; i++) {
                 var e = enemies[i];
 				
@@ -712,9 +749,10 @@ const battle = modules.define('battle')
                 ctx.font = "bold 18pt sans-serif";
                 ctx.fillStyle = "#f00";
                 if (e.hp <= 0) ctx.fillStyle = "#888";
-                var txt = e.name + " " + e.hp;
+                var txt = e.name;
 				var txtw = ctx.measureText(txt).width;
-                ctx.fillText(txt, game.WIDTH-20, 22*(i+1));
+				ctx.textAlign = "right";
+                ctx.fillText(txt, game.WIDTH-120, 22*(i+1));
 				
 				const {x, y} = e;
 				
@@ -722,10 +760,29 @@ const battle = modules.define('battle')
 				if (e.hp > 0)
 					e.anim.draw(ctx);
 				
+				// Display HP
+				draw_bar(ctx, {
+					style: 'red',
+					amount: e.hp,
+					max: e.maxhp,
+					display_max: false,
+					x: game.WIDTH-70,
+					y: 22*i,
+					w: 50,
+					h: 22,
+				});
+
 				// Display current cooldown timer
-                ctx.font = "bold 14pt sans-serif";
-                ctx.fillStyle = "#444";
-                ctx.fillText((e.cd/1000).toFixed(1), game.WIDTH-txtw-30, 22*(i+1));
+				draw_bar(ctx, {
+					style: '#00a078',
+					amount: Math.floor(e.cd/10),
+					max: 150,
+					display_max: false,
+					x: game.WIDTH-120,
+					y: 22*i,
+					w: 50,
+					h: 22,
+				});
             }
         };
 		
