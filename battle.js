@@ -421,7 +421,7 @@ const battle = modules.define('battle')
 
 	module.allies = allies;
 
-	module.initUi = function (map_ui, floor_number, enemies) {
+	module.initUi = function (map_ui, floor_number, enemies, fixed_cooldowns) {
 		// If 'enemies' is undefined, then this is NOT a battle ...
 		// Just a "healing menu".
 		const no_enemies = (enemies === undefined);
@@ -435,10 +435,17 @@ const battle = modules.define('battle')
 			e.anim = stand_anim(e);
 
 		// Initialize people's cooldowns
-		for(let a of allies)
-			a.cd = a.speed * Math.random() * 1000;
-		for(let e of enemies)
-			e.cd = e.speed * Math.random() * 1000;
+		if(fixed_cooldowns) {
+			for(let a of allies)
+				a.cd = a.speed * 100;
+			for(let e of enemies)
+				e.cd = e.speed * 1000;
+		} else {
+			for(let a of allies)
+				a.cd = a.speed * Math.random() * 1000;
+			for(let e of enemies)
+				e.cd = e.speed * Math.random() * 1000;
+		}
 
 		mxg = myg = 0;
 

@@ -272,7 +272,7 @@ const map_screen = modules.define('map_screen')
 			},
 			mouse_clicked: function({mx,my}) {
 				if (party_button.over(mx,my))
-					return game.ui = battle.initUi(ui, pz, undefined);
+					return game.ui = battle.initUi(ui, pz, undefined, true);
 
 				if(equip_button.over(mx,my))
 					return game.ui = party_screen.initUi(ui);
@@ -297,12 +297,12 @@ const map_screen = modules.define('map_screen')
 					boss: ({enemies}) => {
 						room.type = 'stair_forward';
 
-						return game.ui = battle.initUi(ui, pz, enemies);
+						return game.ui = battle.initUi(ui, pz, enemies, true);
 					},
 					mob: ({enemies}) => {
 						room.type = 'empty';
 
-						return game.ui = battle.initUi(ui, pz, enemies);
+						return game.ui = battle.initUi(ui, pz, enemies, false);
 					},
 					stair_forward: () => {
 						++pz;
