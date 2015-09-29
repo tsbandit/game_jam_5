@@ -283,7 +283,7 @@ const battle = modules.define('battle')
 			const enemies = [];
 			enemies.push(makeEnemyBasic({
 				name: "Lion",
-				hp: 14+m*8,
+				hp: 14+8*m,
 				dmg: 5+2*m,
 				speed: 0.8,
 				actions: [basicAttack],
@@ -305,7 +305,7 @@ const battle = modules.define('battle')
 			for(let i=0; i<n; ++i) {
 				enemies.push(makeEnemyBasic({
 					name: "Wolf",
-					hp: 7+m*3,
+					hp: 7+3*m,
 					dmg: 5+m,
 					speed: 1.0 + 0.3*Math.random(),
 					actions: [basicAttack],
