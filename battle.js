@@ -726,15 +726,15 @@ const battle = modules.define('battle')
 			let result = ((mxg > button.x) && (mxg < button.x+button.w) &&
 					(myg > button.y) && (myg < button.y+button.h));
 			return result;
-		}
+		};
 		
 		var overAlly = function() {
 			return overIcon(mxg, myg, allyIcons);
-		}
+		};
 		
 		var overEnemy = function() {
 			return overIcon(mxg, myg, enemyIcons);
-		}
+		};
 		
 		var overIcon = function(mx, my, t) {
 			for (i=0; i<enemies.length; i++) {
