@@ -100,6 +100,23 @@ const battle = modules.define('battle')
 		},
 	};};
 
+	const bash_animation = function(source, target) {
+		const {x: sx, y: sy} = source;
+		const {x: dx, y: dy} = target;
+		const dx1 = 1.06*dx - 0.06*sx;
+		const dy1 = 1.06*dy - 0.06*sy;
+		const dx2 = 1.03*dx - 0.03*sx;
+		const dy2 = 1.03*dy - 0.03*sy;
+		source.anim = lerp_anim(source, sx, sy, dx, dy, 100,
+					  lerp_anim(source, dx, dy, sx, sy, 500,
+					  stand_anim(source) ));
+		target.anim = lerp_anim(target, dx,  dy,  dx,  dy,  100,
+					  lerp_anim(target, dx,  dy,  dx1, dy1, 125,
+					  lerp_anim(target, dx1, dy1, dx,  dy,  125,
+					  lerp_anim(target, dx,  dy,  dx2, dy2, 125,
+					  lerp_anim(target, dx2, dy2, dx,  dy,  125,
+					  stand_anim(target) )))));
+	};
 	const basicAttack = {
 		name: "Attack",
 		target: "enemy",
@@ -112,22 +129,7 @@ const battle = modules.define('battle')
 		effect: function(source, target) {
 			target.hp -= source.dmg;
 
-			// Animation
-			const {x: sx, y: sy} = source;
-			const {x: dx, y: dy} = target;
-			const dx1 = 1.06*dx - 0.06*sx;
-			const dy1 = 1.06*dy - 0.06*sy;
-			const dx2 = 1.03*dx - 0.03*sx;
-			const dy2 = 1.03*dy - 0.03*sy;
-			source.anim = lerp_anim(source, sx, sy, dx, dy, 100,
-			              lerp_anim(source, dx, dy, sx, sy, 500,
-			              stand_anim(source) ));
-			target.anim = lerp_anim(target, dx,  dy,  dx,  dy,  100,
-			              lerp_anim(target, dx,  dy,  dx1, dy1, 125,
-			              lerp_anim(target, dx1, dy1, dx,  dy,  125,
-			              lerp_anim(target, dx,  dy,  dx2, dy2, 125,
-			              lerp_anim(target, dx2, dy2, dx,  dy,  125,
-			              stand_anim(target) )))));
+			bash_animation(source, target);
 		}
 	};
 	const wait = {
@@ -213,6 +215,8 @@ const battle = modules.define('battle')
 						++dmg;
 
 					target.hp -= dmg;
+
+					bash_animation(source, target);
 				},
 				info(source, target) {
 					return [
@@ -236,6 +240,8 @@ const battle = modules.define('battle')
 				effect(source, target) {
 					source.hp -= cost(source);
 					target.hp -= power*source.dmg;
+
+					bash_animation(source, target);
 				},
 				info(source, target) {
 					return [
