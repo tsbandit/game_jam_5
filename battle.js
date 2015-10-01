@@ -246,6 +246,13 @@ const battle = modules.define('battle')
 	const allies = [];
 
 	const module = {};
+	module.customize_floor = function(floor, floor_number) {
+		const data = floor.battle_data = {};
+		if(floor_number === 0)
+			data.distribution = [0.5, 0.5, 0.0, 0.0, 0.0];
+		else
+			data.distribution = [0.2, 0.2, 0.2, 0.2, 0.2];
+	};
 	module.initialize_allies = function() {
 		allies.length = 0;
 
@@ -322,7 +329,7 @@ const battle = modules.define('battle')
 		};
 	};
 
-	module.spawn_enemies = function(floor_number, is_boss) {
+	module.spawn_enemies = function(floor, floor_number, is_boss) {
 		const m = floor_number;  // bonus stats modifier
 
 		if(is_boss) {
@@ -348,17 +355,77 @@ const battle = modules.define('battle')
 
 			const n = util.poisson(2.5);  // Number of enemies
 
-			for(let i=0; i<n; ++i) {
-				enemies.push(makeEnemyBasic({
+			const make_wolf = function(i) {
+				return makeEnemyBasic({
 					name: "Wolf",
 					hp: 7+3*m,
 					dmg: 5+m,
 					speed: 1.0 + 0.3*Math.random(),
 					actions: [basicAttack],
 					place: i,
-					pictureName: "char/wolf.png",
+					pictureName: 'char/wolf.png',
 					exp: 0.4 + 0.4*m,
-				}));
+				});
+			};
+			const make_tree = function(i) {
+				return makeEnemyBasic({
+					name: "Tree",
+					hp: 7+3*m,
+					dmg: 5+m,
+					speed: 1.0 + 0.3*Math.random(),
+					actions: [basicAttack],
+					place: i,
+					pictureName: 'char/tree.png',
+					exp: 0.4 + 0.4*m,
+				});
+			};
+			const make_bat = function(i) {
+				return makeEnemyBasic({
+					name: "Bat-Bird",
+					hp: 7+3*m,
+					dmg: 5+m,
+					speed: 1.0 + 0.3*Math.random(),
+					actions: [basicAttack],
+					place: i,
+					pictureName: 'char/bat.png',
+					exp: 0.4 + 0.4*m,
+				});
+			};
+			const make_blob = function(i) {
+				return makeEnemyBasic({
+					name: "Blob",
+					hp: 7+3*m,
+					dmg: 5+m,
+					speed: 1.0 + 0.3*Math.random(),
+					actions: [basicAttack],
+					place: i,
+					pictureName: 'char/blob.png',
+					exp: 0.4 + 0.4*m,
+				});
+			};
+			const make_lobster = function(i) {
+				return makeEnemyBasic({
+					name: "Lobster",
+					hp: 7+3*m,
+					dmg: 5+m,
+					speed: 1.0 + 0.3*Math.random(),
+					actions: [basicAttack],
+					place: i,
+					pictureName: 'char/wolf.png',
+					exp: 0.4 + 0.4*m,
+				});
+			};
+
+			const distr = floor.battle_data.distribution;
+			for(let i=0; i<n; ++i) {
+				const enemy = ([
+					make_wolf,
+					make_tree,
+					make_bat,
+					make_blob,
+					make_lobster,
+				][util.sample(distr)](i));
+				enemies.push(enemy);
 			}
 
 /*

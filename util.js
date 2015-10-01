@@ -98,6 +98,28 @@ const util = modules.define('util', {
 
 		return k - 1;
 	},
+
+	sample(distr) {
+		// A big assertion ...
+		{
+			let total = 0;
+			for(let i=0; i<distr.length; ++i)
+				total += distr[i];
+			util.assert((total-1)*(total-1) < 1e-10)
+		}
+
+		const rand = Math.random();
+		let r = rand;
+		for(let i=0; i<distr.length; ++i) {
+			r -= distr[i];
+			if(r < 0)
+				return i;
+		}
+		console.log("Weird thing in 'sample' function. r = " + r
+		             + ", rand = " + rand
+		             + ", distr = [" + distr + "]");
+		return distr.length-1;
+	},
 });
 
 }());

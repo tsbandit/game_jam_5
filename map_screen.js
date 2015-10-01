@@ -132,7 +132,7 @@ const map_screen = modules.define('map_screen')
 
 			util.dispatch(room, {
 				mob: () =>
-					room.enemies = battle.spawn_enemies(z, false),
+					room.enemies = battle.spawn_enemies(grid, z, false),
 				treasure: () =>
 					room.contents = battle.random_loot(z),
 			});
@@ -143,6 +143,7 @@ const map_screen = modules.define('map_screen')
 		const generate_floor = function(z) {
 			const grid = [];
 
+			battle.customize_floor(grid, z);
 			for(let i=0; i<6; ++i) {
 				grid.push([]);
 				for(let j=0; j<10; ++j)
@@ -172,7 +173,7 @@ const map_screen = modules.define('map_screen')
 				grid.stair_forward = grid[y][x];
 			} while(grid.stair_forward === grid.stair_backward);
 			grid.stair_forward.type = 'boss';
-			grid.stair_forward.enemies = battle.spawn_enemies(z, true);
+			grid.stair_forward.enemies = battle.spawn_enemies(grid, z, true);
 
 			return grid;
 		};
@@ -205,7 +206,7 @@ const map_screen = modules.define('map_screen')
 				boss: () =>
 					image.drawImage(ctx, 'room/boss.png', sx, sy),
 				mob: ({enemies}) => {
-					image.drawImage(ctx, 'char/wolf.png', sx, sy);
+					image.drawImage(ctx, enemies[0].pictureName, sx, sy);
 
 					ctx.fillStyle = 'white';
 					ctx.font = 'bold 16px sans-serif';
