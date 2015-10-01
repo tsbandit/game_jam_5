@@ -47,6 +47,40 @@ const battle = modules.define('battle')
 		return result;
 	};
 
+	const text_particle = function(text, x, y, alignment) {
+		let time_left = 2200;
+		return {
+			tick(elapsed) {
+				time_left -= elapsed;
+			},
+			finished() {
+				return time_left <= 0;
+			},
+			draw(ctx) {
+				ctx.font = 'bold 24px sans-serif';
+				ctx.textAlign = alignment;
+				if(time_left >= 400)
+					ctx.fillStyle = 'white';
+				else
+					ctx.fillStyle = 'rgba(255, 255, 255, '+(time_left/400)+')';
+				ctx.fillText(text, x, y+24);
+			},
+		};
+	};
+	const text_particle_near = function(person, text) {
+		let offset;
+		let align;
+		if(person.x < 120) {
+			offset = 32;
+			align = 'left';
+		} else {
+			offset = 0;
+			align = 'right';
+		}
+		const particle = text_particle(text, person.x+offset, person.y, align);
+		battle.particles.push(particle);
+	};
+
 	// === SPELLS ==========================
 	
 	const makeSpell = function({name, cost, target, effect, info}) { return {
@@ -114,6 +148,7 @@ const battle = modules.define('battle')
 		isPossible(source) {return true;},
 		effect: function(source, target) {
 			heal(target, Math.floor(source.dmg * 1.6));
+			text_particle_near(source, 'Heal');
 		},
 	};
 	const magicMissile = makeSpell({
@@ -745,11 +780,17 @@ const battle = modules.define('battle')
 			return -1;
 		};
 
+		battle.particles = [];
 		const tickAnimations = function(elapsed) {
 			for(let a of allies)
 				a.anim.tick(elapsed);
 			for(let e of enemies)
 				e.anim.tick(elapsed);
+			for(let p of battle.particles)
+				p.tick(elapsed);
+			for(let i=battle.particles.length-1; i>=0; --i)
+				if(battle.particles[i].finished())
+					battle.particles.splice(i, 1);
 		};
 
         const draw_bar = function(ctx, {style, amount, max, display_max,
@@ -966,6 +1007,8 @@ const battle = modules.define('battle')
 			image.drawImage(ctx, 'room/background.png', 0, 0);
 			drawAllies(ctx);
 			drawEnemies(ctx);
+			for(let p of battle.particles)
+				p.draw(ctx);
 
 			for(let a of allies) {
 				if(a.hp <= 0  ||  !over_button(a))
