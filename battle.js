@@ -108,6 +108,14 @@ const battle = modules.define('battle')
 		effect() {},
 	};
 	
+	const heal_ability = {
+		name: "Heal",
+		target: "ally",
+		isPossible(source) {return true;},
+		effect: function(source, target) {
+			heal(target, Math.floor(source.dmg * 1.6));
+		},
+	};
 	const magicMissile = makeSpell({
 		name: "Magic Missile",
 		cost: 3,
@@ -373,7 +381,7 @@ const battle = modules.define('battle')
 					hp: 7+3*m,
 					dmg: 5+m,
 					speed: 1.0 + 0.3*Math.random(),
-					actions: [basicAttack],
+					actions: [basicAttack, heal_ability],
 					place: i,
 					pictureName: 'char/tree.png',
 					exp: 0.4 + 0.4*m,
