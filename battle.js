@@ -143,6 +143,19 @@ const battle = modules.define('battle')
 		isPossible() {return true;},
 		effect() {},
 	};
+
+	const stun_ability = {
+		name: 'Stun',
+		target: 'enemy',
+		isPossible(source) {return true;},
+		effect: function(source, target) {
+			target.hp -= source.dmg;
+			target.cd += 1000;
+
+			text_particle_near(target, 'Stun');
+			bash_animation(source, target);
+		},
+	};
 	
 	const heal_ability = {
 		name: "Heal",
@@ -434,7 +447,7 @@ const battle = modules.define('battle')
 					hp: 7+3*m,
 					dmg: 5+m,
 					speed: 1.0 + 0.3*Math.random(),
-					actions: [basicAttack],
+					actions: [stun_ability],
 					place: i,
 					pictureName: 'char/bat.png',
 					exp: 0.4 + 0.4*m,
