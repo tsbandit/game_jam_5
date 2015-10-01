@@ -1064,8 +1064,8 @@ const battle = modules.define('battle')
 			for (var i=0; i<allies.length; i++) {
 				var a = allies[i];
 				if (a.cd <= 0  &&  a.hp > 0) {
-					a.cd += a.speed*1000;
 					yield make_menu_ui(a, resume);
+					a.cd += a.speed*1000;
 					if(enemiesDead() && !no_enemies)
 						break;
 				}
