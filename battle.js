@@ -419,7 +419,7 @@ const battle = modules.define('battle')
 					speed: 1.0 + 0.3*Math.random(),
 					actions: [basicAttack],
 					place: i,
-					pictureName: 'char/wolf.png',
+					pictureName: 'char/lobster.png',
 					exp: 0.4 + 0.4*m,
 				});
 			};
