@@ -316,7 +316,7 @@ const battle = modules.define('battle')
 		const ENEMY_W = 32;
 		const ENEMY_H = 32;
 		const ENEMY_B = 16;
-		const ENEMY_X = game.WIDTH-240-ENEMY_W;
+		const ENEMY_X = 244;
 		const ENEMY_Y = 120;
 
 		return {
@@ -352,7 +352,7 @@ const battle = modules.define('battle')
 				pictureName: 'char/lion.png',
 				exp: 3+m,
 			}));
-			enemies[0].x -= 32;
+//			enemies[0].x -= 32;
 			enemies[0].w = 64;
 			enemies[0].h = 64;
 			return enemies;

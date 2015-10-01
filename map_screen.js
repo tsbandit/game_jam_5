@@ -144,9 +144,9 @@ const map_screen = modules.define('map_screen')
 			const grid = [];
 
 			battle.customize_floor(grid, z);
-			for(let i=0; i<6; ++i) {
+			for(let i=0; i<10; ++i) {
 				grid.push([]);
-				for(let j=0; j<10; ++j)
+				for(let j=0; j<6; ++j)
 					grid[i].push(make_room(grid, j, i, z));
 			}
 
