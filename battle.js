@@ -754,6 +754,9 @@ const battle = modules.define('battle')
 
         const draw_bar = function(ctx, {style, amount, max, display_max,
 		                                x, y, w, h                       }) {
+			ctx.fillStyle = 'black';
+			ctx.fillRect(x, y, w, h);
+
 			ctx.fillStyle = style;
 			const r = Math.min(Math.max(0, amount/max), 1);
 			ctx.fillRect(x, y, w*r, h);
